@@ -6,7 +6,7 @@
 BEGIN { if(!Width) Width = 80; }
 
 # Preserve headings
-/^[[:space:]]*(=|-)+/ {
+/^[[:space:]]*[=\-][=\-][=\-]+/ {
     if(Buf)
         Out = Out Buf "\n" $0 "\n";
     else
@@ -16,7 +16,20 @@ BEGIN { if(!Width) Width = 80; }
 }
 
 # Preformatted text is sent to the output verbatim
-/^(    |\t)+/ && match(last,/^[[:space:]]*$/) {
+# Ditto for links/abbreviations
+/^(    |\t)+/ && match(last,/^[[:space:]]*$/) || /^[[:space:]]*\*?\[.*\]:/ {
+    Out = Out $0 "\n";
+    next;
+}
+
+# GitHub-style ``` code blocks:
+/^```/ {
+    Out = Out Buf "\n" $0 "\n";
+    Buf = "";
+    Code = !Code;
+    next;
+}
+Code {
     Out = Out $0 "\n";
     next;
 }
@@ -57,10 +70,11 @@ function fmt(str,          loc,word,n,indent) {
 
     # Trim leading whitespace
     str = substr(str, RLENGTH+1);
+    gsub(/\r/, "", str); # Windows :(
 
     # Lines starting with list item characters
     # force a line break in the output
-    if(match(str,/^([*+-]|[[:digit:]]\.)/)) {
+    if(match(str,/^([*+\-]|[[:digit:]]+\.)/)) {
         if(Buf) Out = Out Buf "\n";
         Buf = "";
         # Preserve the indentation in the global Indent
@@ -88,23 +102,28 @@ function fmt(str,          loc,word,n,indent) {
         n = RSTART+RLENGTH;
 
         # Handle forced line breaks
-        if(match(str,/(  |[[:space:]]+\\)$/)) {
-            Out = Out str "\n";
-            n = RSTART+RLENGTH;
-        } else {
-            # If the buffer + the word exceeds the allowed width
-            # then insert a line break. Otherwise, just append the
-            # word to the buffer.
-            # Also, preserve the indentation.
-            if(length(Buf) + length(word) + 1 >= Width) {
-                Out = Out Buf "\n";
-                if(InList) indent = Indent "  ";
-                Buf = indent word;
-            } else if(length(Buf))
-                Buf = Buf " " word;
+        if(match(str,/(  |[[:space:]]+\\)$/) == loc) {
+            if(length(Buf) + length(str) + 1 >= Width)
+                Out = Out Buf "\n" indent str "\n" indent;
             else
-                Buf = indent word;
+                Out = Out Buf " " str "\n" indent;
+            Buf = "";
+            return;
         }
+
+        # If the buffer + the word exceeds the allowed width
+        # then insert a line break. Otherwise, just append the
+        # word to the buffer.
+        # Also, preserve the indentation.
+        if(length(Buf) + length(word) + 1 >= Width) {
+            Out = Out Buf "\n";
+            if(InList) indent = Indent "  ";
+            Buf = indent word;
+        } else if(length(Buf))
+            Buf = Buf " " word;
+        else
+            Buf = indent word;
+
         str = substr(str, n);
         loc = match(str, /[[:space:]]+/);
     }
