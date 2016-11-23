@@ -28,6 +28,21 @@ to then add a `docs` target to the Makefile:
     api-doc.html: header.h d.awk
         $(AWK) -f d.awk $< > $@
 
+It supports most of Markdown:
+* **Bold**, _italic_ and `monospaced` text.
+* Both header styles
+* Horizontal rules
+* Ordered and Unordered lists
+* Code blocks and block quotes
+* Hyperlinks and images
+* A large number of HTML tags can be embedded in a document
+
+It also supports a number of extensions, mostly based on GitHub syntax:
+* ```` ``` ````-style code blocks
+* GitHub-style task lists
+* MultiMarkdown style footnotes and abbreviations.
+* Backslash at the end of a line forces a line break.
+
 There are additional scripts in the distribution:
 
  * `mdown.awk` - Generates HTML from a normal Markdown file.
@@ -47,7 +62,7 @@ It is meant for programming languages like C, C++ or JavaScript that use the
 existence of bundled documentation tools for those languages makes it
 redundant).
 
-It has two distinguising features:
+It has two distinguishing features:
 
 Firstly, it is written in the ubiquitous Awk language. You can distribute the
 `d.awk` script with your project's source code and your users will be able to
