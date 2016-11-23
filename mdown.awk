@@ -1,6 +1,7 @@
 #! /usr/bin/awk -f
 #
-# Markdown processor in AWK. It is simplified from comdown.awk
+# Markdown processor in AWK. It is simplified from d.awk
+# https://github.com/wernsey/d.awk
 #
 # (c) 2016 Werner Stoop
 # Copying and distribution of this file, with or without modification,

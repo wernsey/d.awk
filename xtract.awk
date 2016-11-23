@@ -1,6 +1,7 @@
 #! /usr/bin/awk -f
 #
 # Extracts the /**-denoted comments from a source file.
+# https://github.com/wernsey/d.awk
 #
 # (c) 2016 Werner Stoop
 # Copying and distribution of this file, with or without modification,

@@ -1,7 +1,15 @@
 # Like the Un*x `fmt` command, but for markdown.
 #
+# https://github.com/wernsey/d.awk
+#
 # It does its best to preserve markdown headings,
 # lists, pre-formatted code blocks and block quotes.
+#
+# (c) 2016 Werner Stoop
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty provided the copyright
+# notice and this notice are preserved. This file is offered as-is,
+# without any warranty.
 
 BEGIN { if(!Width) Width = 80; }
 
@@ -100,7 +108,7 @@ function fmt(str,          loc,word,n,indent) {
     while(loc) {
         word = substr(str, 1, RSTART-1);
         n = RSTART+RLENGTH;
-
+        
         # Handle forced line breaks
         if(match(str,/(  |[[:space:]]+\\)$/) == loc) {
             if(length(Buf) + length(str) + 1 >= Width)
