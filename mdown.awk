@@ -25,6 +25,8 @@ BEGIN {
     srand();
 }
 
+{gsub(/\r/,"");}
+
 /^[[:space:]]*\[[_ [:alnum:]]+\]:/ {
     linkdesc = ""; lastlink = 0;
     match($0,/\[.*\]/);
