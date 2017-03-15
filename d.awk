@@ -97,6 +97,7 @@ Mode != "none" && /\*\//      {
     }
     Mode = "none";
     Buf = "";
+    Prev = "";
 }
 Mode != "none" {
     gsub(/\r/, "", $0);
@@ -211,19 +212,19 @@ function filter(st,       res,tmp) {
             if(Buf) res = tag("p", scrub(Buf));
             Buf = st;
             push("pre");
-        } else if(!trim(prev) && match(st, /^[[:space:]]*[*-][[:space:]]*[*-][[:space:]]*[*-][-*[:space:]]*$/)) {
+        } else if(!trim(Prev) && match(st, /^[[:space:]]*[*-][[:space:]]*[*-][[:space:]]*[*-][-*[:space:]]*$/)) {
             if(Buf) res = tag("p", scrub(Buf));
             Buf = "";
             res = res "<hr>\n";
         } else if(match(st, /^[[:space:]]*===+[[:space:]]*$/)) {
-            Buf = trim(substr(Buf, 1, length(Buf) - length(prev) - 1));
+            Buf = trim(substr(Buf, 1, length(Buf) - length(Prev) - 1));
             if(Buf) res= tag("p", scrub(Buf));
-            if(prev) res = res heading(1, scrub(prev));
+            if(Prev) res = res heading(1, scrub(Prev));
             Buf = "";
         } else if(match(st, /^[[:space:]]*---+[[:space:]]*$/)) {
-            Buf = trim(substr(Buf, 1, length(Buf) - length(prev) - 1));
+            Buf = trim(substr(Buf, 1, length(Buf) - length(Prev) - 1));
             if(Buf) res = tag("p", scrub(Buf));
-            if(prev) res = res heading(2, scrub(prev));
+            if(Prev) res = res heading(2, scrub(Prev));
             Buf = "";
         } else if(match(st, /^[[:space:]]*#+/)) {
             sub(/#+[[:space:]]*$/, "", st);
@@ -308,7 +309,7 @@ function filter(st,       res,tmp) {
             }
         }
     }
-    prev = st;
+    Prev = st;
     return res;
 }
 function scrub(st,    mp, ms, me, r, p, tg, a) {
