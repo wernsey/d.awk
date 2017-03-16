@@ -487,10 +487,17 @@ function make_toc(st,              r,p,dis,t,n) {
     }
     return r st;
 }
-function fix_links(st,          lt,ld,lr,url,img,res,rx,pos) {
-    do {
+function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
+    do {        
+        pre = match(st, /<pre>/); # Don't substitute in <pre> blocks        
         pos = match(st, /\[[^\]]+\]/);
         if(!pos)break;
+        if(pre && pre < pos) {
+            pre = match(st, /<\/pre>/);
+            res = res substr(st,1,RSTART+RLENGTH);
+            st = substr(st, RSTART+RLENGTH);
+            continue;
+        }
         img=substr(st,RSTART-1,1)=="!";
         if(substr(st, RSTART-(img?2:1),1)=="\\") {
             res = res substr(st,1,RSTART-(img?3:2));
