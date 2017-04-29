@@ -1,3 +1,5 @@
+#! /usr/bin/awk -f
+#
 # Like the Un*x `fmt` command, but for markdown.
 #
 # https://github.com/wernsey/d.awk
