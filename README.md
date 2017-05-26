@@ -2,7 +2,8 @@ d.awk
 =====
 
 An [Awk][] script to generate documentation from [Markdown][]-formatted
-comments in C/C++/Java/JavaScript/C# source code.
+comments in C, C++, JavaScript and any other language that uses `/* */` for 
+multiline comments in its source code.
 
 For example, add a comment like this to your source file:
 
@@ -16,6 +17,8 @@ For example, add a comment like this to your source file:
 
 Then use Awk to run the `d.awk` script on it like so:
 
+    $ ./d.awk file.c > doc.html
+	$ # or:
     $ awk -f d.awk file.c > doc.html
 
 The text within the `/** */` comment blocks are parsed as Markdown, and
@@ -97,12 +100,13 @@ Configuration options can be set in the `BEGIN` block of the script, or passed
 to the script through Awk's `-v` command-line option:
 - `-v Title="My Document Title"` to set the `<title/>` of the HTML
 - `-v stylesheet="style.css"` to use a separate file as style sheet.
-- `-v Theme=n` with n=[1-8] to use one of the predefined color themes. The
-  default is Theme 1. Theme 0 disables all stylesheets.
 - `-v TopLinks=1` to have links to the top of the document next to headers.
 - `-v classic_underscore=1` words_with_underscores behave like old markdown
   where the underscores in the word counts as emphasis. The default behaviour
   is to have `words_like_this` not contain any emphasis.
+
+The stylesheet for the output HTML can also be modified at the bottom of the
+script.
 
 ### mdown.awk
 

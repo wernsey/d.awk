@@ -557,24 +557,17 @@ function obfuscate(e,     r,i,t,o) {
     }
     return o;
 }
-function bright(c,a ,r,g,b) {
-    sub(/^#/,"",c);
-    r = 255*a + _hex[toupper(substr(c,1,2))]*(1-a);
-    g = 255*a + _hex[toupper(substr(c,3,2))]*(1-a);
-    b = 255*a + _hex[toupper(substr(c,5,2))]*(1-a);
-    return sprintf("#%02X%02X%02X",r>255?255:r,g>255?255:g,b>255?255:b);
-}
 function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff,i) {
     if(Theme == "0") return "";
 
     css["body"] = "color:%color1%;font-family:%font-family%;line-height:1.5em;" \
                 "padding:1em 2em;width:80%;max-width:%maxwidth%;margin:0 auto;min-height:100%;float:none;";
-    css["h1"] = "color:%color1%;border-bottom:1px solid %background1%;padding:0.3em 0.1em;";
-    css["h2"] = "color:%color2%;border-bottom:1px solid %background2%;padding:0.2em 0.1em;";
-    css["h3"] = "color:%color3%;border-bottom:1px solid %background3%;padding:0.1em 0.1em;";
+    css["h1"] = "color:%color1%;border-bottom:1px solid %color1%;padding:0.3em 0.1em;";
+    css["h2"] = "color:%color2%;border-bottom:1px solid %color2%;padding:0.2em 0.1em;";
+    css["h3"] = "color:%color3%;border-bottom:1px solid %color3%;padding:0.1em 0.1em;";
     css["h4,h5,h6"] = "color:%color4%;padding:0.1em 0.1em;";
     css["h1,h2,h3,h4,h5,h6"] = "font-weight:normal;line-height:1.2em;";
-	css["h4"] = "border-bottom:1px solid %background4%";
+	css["h4"] = "border-bottom:1px solid %color4%";
     css["p"] = "margin:0.5em 0.1em;"
     css["hr"] = "background:%hr%;height:1px;border:0;"
     css["a"] = "color:%color2%;";
@@ -583,9 +576,9 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["a:hover"] = "color:%color4%;";
     css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;";
     css["strong,b"] = "color:%color1%";
-    css["code"] = "color:%color1%;";
+    css["code"] = "color:%color2%;";
     css["blockquote"] = "margin-left:1em;color:%color2%;border-left:0.2em solid %color3%;padding:0.25em 0.5em;";
-    css["pre"] = "color:%color1%;border:1px solid;border-radius:5px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;";
+    css["pre"] = "color:%color2%;background:%color5%;border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;";
     css["table"] = "border-collapse:collapse;margin:0.5em;";
     css["th,td"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
     css["th"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
@@ -597,8 +590,8 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["dd"] = "padding:0.3em;";
     css["mark"] = "color:%color2%;background-color:%color5%;";
     css["del,s"] = "color:%color4%;";
-    css["a#toc-button"] = "color:%color3%;background:%color5%;cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
-    css["a#toc-button:hover"] = "color:%color5%;background:%color3%;";
+    css["a#toc-button"] = "color:%color2%;background:%color5%;cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
+    css["a#toc-button:hover"] = "color:%color5%;background:%color4%;";
     css["div#table-of-contents"] = "padding:0;font-size:smaller;";
     css["abbr"] = "cursor:help;";
     css["ol.footnotes"] = "font-size:small;color:%color4%";
@@ -607,36 +600,21 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css[".fade"] = "color:%color5%;";
     css[".highlight"] = "color:%color2%;background-color:%color5%;";
 
-    if(Theme==2){
-        c1="#303F9F";c2="#0449CC";c3="#2162FA";c4="#4B80FB";c5="#EDF2FF";
-        ff="\"Trebuchet MS\", Helvetica, sans-serif";
-    } else if(Theme==3){
-        c1="#430005";c2="#740009";c3="#A6373F";c4="#c55158";c5="#fbf2f2";
-        ff="Verdana, Geneva, sans-serif";
-    } else if(Theme==4){
-        c1="#083900";c2="#0D6300";c3="#3C8D2F";c4="#50be3f";c5="#f2faf1";
-        ff="Georgia, serif";
-    } else if(Theme==5){
-        c1="#453700";c2="#775F00";c3="#AA9339";c4="#c7b057";c5="#fbf9f2";
-        ff="Tahoma, Geneva, sans-serif";
-    } else if(Theme==6){
-        c1="#315067";c2="#4F9E9C";c3="#77AD93";c4="#95CE94";c5="#F6FFEE";
-        ff="Verdana, sans-serif;";
-    } else if(Theme==7){
-        c1="#35305D";c2="#646379";c3="#7A74A5";c4="#646392";c5="#fafafa";
-    } else if(Theme==8){
-        c1="#215FC2";c2="#D49095";c3="#AD90D4";c4="#90D4CF";c5="#F7FDEF";
-    } else {
-        c1="#092859";c2="#1351b5";c3="#d47034";c4="#DC7435";c5="#F6F8FF";
-    }
-	if(!ff) ff = "sans-serif"
+    # Colors:
+    c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
+	# Font Family:
+    ff = "sans-serif";
+    
+    # Alternative color scheme suggestions:
+    #c1="#303F9F";c2="#0449CC";c3="#2162FA";c4="#4B80FB";c5="#EDF2FF";
+    #ff="\"Trebuchet MS\", Helvetica, sans-serif";
+    #c1="#430005";c2="#740009";c3="#A6373F";c4="#c55158";c5="#fbf2f2";
+    #ff="Verdana, Geneva, sans-serif";
+    #c1="#083900";c2="#0D6300";c3="#3C8D2F";c4="#50be3f";c5="#f2faf1";
+    #ff="Georgia, serif";
+    #c1="#35305D";c2="#646379";c3="#7A74A5";c4="#646392";c5="#fafafa";
 
     for(i = 0; i<=255; i++)_hex[sprintf("%02X",i)]=i;
-    bg1 = bright(c1,0.5);
-    bg2 = bright(c2,0.5);
-    bg3 = bright(c3,0.5);
-    bg4 = bright(c3,0.75);
-    hr = bright(c1,0.75);
     for(k in css)
         ss = ss "\n" k "{" css[k] "}";
     gsub(/%maxwidth%/,MaxWidth,ss);
@@ -645,10 +623,6 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     gsub(/%color3%/,c3,ss);
     gsub(/%color4%/,c4,ss);
     gsub(/%color5%/,c5,ss);
-    gsub(/%background1%/,bg1,ss);
-    gsub(/%background2%/,bg2,ss);
-    gsub(/%background3%/,bg3,ss);
-    gsub(/%background4%/,bg4,ss);
     gsub(/%font-family%/,ff,ss);
     gsub(/%hr%/,hr,ss);
     return ss;
