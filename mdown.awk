@@ -236,7 +236,7 @@ function filter(st,       res,tmp) {
                     Buf = Buf "\n<" Open[ListLevel] ">";
                 } else while(RLENGTH < indent[ListLevel])
                     Buf = Buf "\n</" Open[ListLevel--] ">";
-                if(match(tmp,/^[[:space:]]*\[[xX[:space:]]?\]/)) {
+                if(match(tmp,/^[[:space:]]*\[[xX[:space:]]\]/)) {
                     st = substr(tmp,RLENGTH+1);
                     tmp = tolower(substr(tmp,RSTART,RLENGTH));
                     Buf = Buf "<li><input type=\"checkbox\" " (index(tmp,"x")?"checked":"") " disabled>" scrub(st);

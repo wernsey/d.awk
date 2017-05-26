@@ -294,7 +294,7 @@ function filter(st,       res,tmp) {
                     Buf = Buf "\n<" Open[ListLevel] ">";
                 } else while(RLENGTH < indent[ListLevel])
                     Buf = Buf "\n</" Open[ListLevel--] ">";
-                if(match(tmp,/^[[:space:]]*\[[xX[:space:]]?\]/)) {
+                if(match(tmp,/^[[:space:]]*\[[xX[:space:]]\]/)) {
                     st = substr(tmp,RLENGTH+1);
                     tmp = tolower(substr(tmp,RSTART,RLENGTH));
                     Buf = Buf "<li><input type=\"checkbox\" " (index(tmp,"x")?"checked":"") " disabled>" scrub(st);
@@ -488,7 +488,7 @@ function make_toc(st,              r,p,dis,t,n) {
     return r st;
 }
 function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
-    do {        
+    do {
         pre = match(st, /<pre>/); # Don't substitute in <pre> blocks        
         pos = match(st, /\[[^\]]+\]/);
         if(!pos)break;

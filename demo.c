@@ -86,7 +86,7 @@
  *     - [] Subtask 1a
  *     - [X] Subtask 1b
  *   - [x] Task 2 - **completed.**
- *   - [] Task 3
+ *   - [] Task 3 - the space between the `[` is `]` is necessary.
  *     1. [ ] Subtask 3a
  *     1. [x] Subtask 3b
  *   - [x] ~~Task 4~~ - also completed
