@@ -150,4 +150,19 @@ redistributed with this notice:
     notice and this notice are preserved. This file is offered as-is,
     without any warranty.
 
+## TODO:
+
+Things I'd like to add in the future:
+
+- [ ] Syntax highlighting for ```` ``` ````-style code blocks.
+  - Using [GitHub's syntax](https://help.github.com/articles/creating-and-highlighting-code-blocks/)
+  - Google's code prettify is [here](https://github.com/google/code-prettify)
+  - It should be optional (with default `OFF`), because it is going to download additional scripts.
+  - This doesn't mean that I can't have the proper classes for the `<code>` blocks, though.
+- [ ] The `mdown.awk` script doesn't always like lists at the end of a file.
+  - The last item in the list gets duplicated.
+  - You can work around this issue by adding a line with a space in it at the end of the file.
+  - The other scripts don't have this problem.
+- [ ] Maybe allow `///` comments to also be used. 
+  - The problem is that things like lists might not carry over between blocks?
 
