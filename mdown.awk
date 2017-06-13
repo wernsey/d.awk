@@ -15,6 +15,7 @@ BEGIN {
 	if(Title=="") Title = "Documentation";
 	if(Theme=="") Theme = 1;
 	if(Pretty=="") Pretty = 0;
+	if(HideToCLevel=="") HideToCLevel = 3;
     #TopLinks = 1;
 	#classic_underscore = 1;
     if(MaxWidth=="") MaxWidth="1080px";
@@ -28,7 +29,7 @@ BEGIN {
 
 {gsub(/\r/,"");}
 
-/^[[:space:]]*\[[_ [:alnum:]]+\]:/ {
+/^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/ {
     linkdesc = ""; lastlink = 0;
     match($0,/\[.*\]/);
     LinkRef = tolower(substr($0, RSTART+1, RLENGTH-2));
@@ -61,7 +62,7 @@ lastlink && /^[[:space:]]*["'(]/ {
     next;
 }
 lastlink { lastlink = 0; }
-Mode == "p" && /^[[:space:]]*\[\^[_[:alnum:]]+\]:[[:space:]]*/ {
+Mode == "p" && /^[[:space:]]*\[\^[-._[:alnum:][:space:]]+\]:[[:space:]]*/ {
     match($0, /\[\^[[:alnum:]]+\]:/);
     name = substr($0, RSTART+2,RLENGTH-4);
     def = substr($0, RSTART+RLENGTH+1);
@@ -109,10 +110,18 @@ END {
 	if(ToC && match(Out, /!\[toc[-+]?\]/))
 		print "<script type=\"text/javascript\"><!--\n" \
 			"function toggle_toc(n) {\n" \
-			"   var toc=document.getElementById(\"table-of-contents-\" + n);\n" \
-			"   var btn=document.getElementById(\"btn-text\");\n" \
-			"   toc.style.display=(toc.style.display==\"none\")?\"block\":\"none\";\n" \
-			"   btn.textContent=(toc.style.display==\"none\")?\"[+]\":\"[-]\";\n" \
+            "    var toc=document.getElementById('table-of-contents-' + n);\n" \
+            "    var btn=document.getElementById('btn-text');\n" \
+            "    toc.style.display=(toc.style.display=='none')?'block':'none';\n" \
+            "    btn.textContent=(toc.style.display=='none')?'[+]':'[-]';\n" \
+            "}\n" \
+            "function toggle_toc_ul(n) {   \n" \
+            "    var toc=document.getElementById('toc-ul-' + n);   \n" \
+            "    var btn=document.getElementById('toc-btn-' + n);   \n" \
+            "    if(toc) {\n" \
+            "        toc.style.display=(toc.style.display=='none')?'block':'none';   \n" \
+            "        btn.textContent=(toc.style.display=='none')?'[+]':'[-]';\n" \
+            "    }\n" \
 			"}\n" \
 			"//-->\n</script>";
     if(Pretty && HasCode)
@@ -413,8 +422,16 @@ function heading(level, st,       res, href) {
     LinkUrls[href] = "#" href;
     LinkUrls[tolower(st)] = "#" href;
     res = tag("h" level, st (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":""), "id=\"" href "\"");
-    for(;ToCLevel < level; ToCLevel++)
-        ToC = ToC "<ul class=\"toc-" level "\">";
+    for(;ToCLevel < level; ToCLevel++) {
+        ToC_ID++;
+        if(ToCLevel < HideToCLevel) {
+            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">[-]</a>";
+            ToC = ToC "<ul class=\"toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
+        } else {
+            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">[+]</a>";
+            ToC = ToC "<ul style=\"display:none;\" class=\"toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
+        }
+    }
     for(;ToCLevel > level; ToCLevel--)
         ToC = ToC "</ul>";
     ToC = ToC "<li class=\"toc-" level "\"><a class=\"toc-" level "\" href=\"#" href "\">" st "</a>\n";
@@ -429,7 +446,7 @@ function make_toc(st,              r,p,dis,t,n) {
     while(p) {
 		++n;
 		dis = index(substr(st,RSTART,RLENGTH),"+");
-		t = "<div>\n<small><a id=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text\">" (dis?"[-]":"[+]") "</span>&nbsp;Contents</a></small>\n" \
+		t = "<div>\n<a class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text\">" (dis?"[-]":"[+]") "</span>&nbsp;Contents</a>\n" \
 			"<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc-1\">" ToC "</ul>\n</div>\n</div>";
         r = r substr(st,1,RSTART-1);
         if(substr(st,RSTART-1,1) != "\\")
@@ -581,7 +598,7 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["h1,h2,h3,h4,h5,h6"] = "font-weight:normal;line-height:1.2em;";
 	css["h4"] = "border-bottom:1px solid %color4%";
     css["p"] = "margin:0.5em 0.1em;"
-    css["hr"] = "background:%hr%;height:1px;border:0;"
+    css["hr"] = "background:%color1%;height:1px;border:0;"
     css["a"] = "color:%color2%;";
     css["a:visited"] = "color:%color2%;";
     css["a:active"] = "color:%color4%;";
@@ -602,8 +619,8 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["dd"] = "padding:0.3em;";
     css["mark"] = "color:%color2%;background-color:%color5%;";
     css["del,s"] = "color:%color4%;";
-    css["a#toc-button"] = "color:%color2%;background:%color5%;cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
-    css["a#toc-button:hover"] = "color:%color5%;background:%color4%;";
+    css["a.toc-button"] = "color:%color2%;cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
+    css["a.toc-button:hover"] = "color:%color4%;background:%color5%;";
     css["div#table-of-contents"] = "padding:0;font-size:smaller;";
     css["abbr"] = "cursor:help;";
     css["ol.footnotes"] = "font-size:small;color:%color4%";

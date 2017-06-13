@@ -17,9 +17,11 @@ For example, add a comment like this to your source file:
 
 Then use Awk to run the `d.awk` script on it like so:
 
-    $ ./d.awk file.c > doc.html
-	$ # or:
-    $ awk -f d.awk file.c > doc.html
+```sh
+./d.awk file.c > doc.html
+# or:
+awk -f d.awk file.c > doc.html
+```
 
 The text within the `/** */` comment blocks are parsed as Markdown, and
 rendered as HTML.
@@ -112,6 +114,8 @@ to the script through Awk's `-v` command-line option:
 - `-v stylesheet="style.css"` to use a separate file as style sheet.
 - `-v TopLinks=1` to have links to the top of the document next to headers.
 - `-v Pretty=1` enable Syntax highlighting with Google's [code-prettify][] library.        
+- `-v HideToCLevel=n` specifies the level of the Table of Contents that should be 
+  collapsed by default.
 - `-v classic_underscore=1` words_with_underscores behave like old markdown
   where the underscores in the word counts as emphasis. The default behaviour
   is to have `words_like_this` not contain any emphasis.
