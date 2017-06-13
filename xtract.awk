@@ -16,5 +16,5 @@
 in_comment && /\*\// { in_comment = 0; }
 in_comment && /^[[:space:]]*\*/ {	
 	sub(/^[[:space:]]*\*/,"");
-	print;
 }
+in_comment { print; }
