@@ -16,6 +16,8 @@
 # - `stylesheet = "style.css"` to use a separate file as style sheet.
 # - `Theme=n` with n either 0 to disable CSS or 1 to enable; Default = 1
 # - `TopLinks=1` to have links to the top of the doc next to headers.
+# - `Pretty=1` enable Syntax highlighting with Google's code prettify
+#        https://github.com/google/code-prettify
 # - `classic_underscore=1` words_with_underscores behave like old markdown where the
 #        underscores in the word counts as emphasis. The default behaviour is to have
 #        `words_like_this` not contain any emphasis.
@@ -65,6 +67,7 @@ BEGIN {
 	# Configuration options
 	if(Title=="") Title = "Documentation";
 	if(Theme=="") Theme = 1;
+	if(Pretty=="") Pretty = 0;
     #TopLinks = 1;
 	#classic_underscore = 1;
     if(MaxWidth=="") MaxWidth="1080px";
@@ -188,6 +191,8 @@ END {
 			"   btn.textContent=(toc.style.display==\"none\")?\"[+]\":\"[-]\";\n" \
 			"}\n" \
 			"//-->\n</script>";
+    if(Pretty && HasCode)
+        print "<script src=\"https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js\"></script>";
     print "</head><body>";
     if(Out) {
         Out = fix_footnotes(Out);
@@ -221,8 +226,8 @@ function trim(st) {
 }
 function filter(st,       res,tmp) {
     if(Mode == "p") {
-        if(match(st, /^((    )| *\t)/) || match(st, /^[[:space:]]*```/)) {
-            preterm = trim(substr(st, RSTART,RLENGTH));
+        if(match(st, /^((    )| *\t)/) || match(st, /^[[:space:]]*```+[[:alnum:]]*/)) {
+            Preterm = trim(substr(st, RSTART,RLENGTH));
             st = substr(st, RSTART+RLENGTH);
             if(Buf) res = tag("p", scrub(Buf));
             Buf = st;
@@ -281,14 +286,23 @@ function filter(st,       res,tmp) {
         } else
             Buf = Buf st;
     } else if(Mode == "pre") {
-        if(!preterm && match(st, /^((    )| *\t)/) || preterm && !match(st, /^[[:space:]]*```/))
+        if(!Preterm && match(st, /^((    )| *\t)/) || Preterm && !match(st, /^[[:space:]]*```+/))
             Buf = Buf ((Buf)?"\n":"") substr(st, RSTART+RLENGTH);
         else {
             gsub(/\t/,"    ",Buf);
-			if(length(trim(Buf)) > 0)
-            	res = tag("pre", tag("code", escape(Buf)));
+			if(length(trim(Buf)) > 0) {
+                Lang = "";
+                if(match(Preterm, /^[[:space:]]*```+/)) {
+                    Lang = trim(substr(Preterm, RSTART+RLENGTH)); 
+                    if(Lang) { 
+                        Lang = "class=\"prettyprint lang-" Lang "\""; 
+                        HasCode=1;
+                    }
+                }
+            	res = tag("pre", tag("code", escape(Buf), Lang));
+            }
             pop();
-            if(preterm) sub(/^[[:space:]]*```/,"",st);
+            if(Preterm) sub(/^[[:space:]]*```+[[:alnum:]]*/,"",st);
             res = res filter(st);
         }
     } else if(Mode == "ul" || Mode == "ol") {

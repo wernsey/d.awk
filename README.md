@@ -42,9 +42,17 @@ It supports most of Markdown:
 
 It also supports a number of extensions, mostly based on GitHub syntax:
 * ```` ``` ````-style code blocks
-* GitHub-style task lists
+  * You can specify a language according to Github's [Syntax Highlighting][github-syntax]
+    rules, for example ```` ```java ````
+  * This requires that you specify `-vPretty=1` on the command line.  \
+    (It is disabled by default because the generated HTML uses a third-party script)
+  * It uses Google's [code-prettify][] library for the syntax highlighting.   
+* [x] GitHub-style task lists
 * MultiMarkdown style footnotes and abbreviations.
 * Backslash at the end of a line forces a line break.
+
+The file [demo.c](demo.c) in the distribution serves as an example, user guide and test
+at the same time.
 
 There are additional scripts in the distribution:
 
@@ -54,6 +62,8 @@ There are additional scripts in the distribution:
 
 [Awk]: https://en.wikipedia.org/wiki/AWK
 [Markdown]: https://en.wikipedia.org/wiki/Markdown
+[code-prettify]: https://github.com/google/code-prettify
+[github-syntax]: https://help.github.com/articles/creating-and-highlighting-code-blocks/#syntax-highlighting
 
 ## Motivation
 
@@ -101,6 +111,7 @@ to the script through Awk's `-v` command-line option:
 - `-v Title="My Document Title"` to set the `<title/>` of the HTML
 - `-v stylesheet="style.css"` to use a separate file as style sheet.
 - `-v TopLinks=1` to have links to the top of the document next to headers.
+- `-v Pretty=1` enable Syntax highlighting with Google's [code-prettify][] library.        
 - `-v classic_underscore=1` words_with_underscores behave like old markdown
   where the underscores in the word counts as emphasis. The default behaviour
   is to have `words_like_this` not contain any emphasis.
@@ -154,7 +165,7 @@ redistributed with this notice:
 
 Things I'd like to add in the future:
 
-- [ ] Syntax highlighting for ```` ``` ````-style code blocks.
+- [x] Syntax highlighting for ```` ``` ````-style code blocks.
   - Using [GitHub's syntax](https://help.github.com/articles/creating-and-highlighting-code-blocks/)
   - Google's code prettify is [here](https://github.com/google/code-prettify)
   - It should be optional (with default `OFF`), because it is going to download additional scripts.

@@ -126,6 +126,21 @@
  *     return 0;
  * }
  * ```
+ *
+ * You can use ```` ```lang ```` to specify a language, which can be syntax highlighted
+ * Google's [code prettifier](https://github.com/google/code-prettify). The example
+ * below specifies ```` ```java ```` to syntax highlight a block of Java code.
+ * You have to specify `-vPretty=1` on the command line for the functionality to work.
+ * 
+ * ```java
+ * // Some sample Java code
+ * class Hello {
+ *     public static void main(String... args) {
+ *         System.out.println("hello world");
+ *     }
+ * }
+ * ```
+ *
  * Unfortunately, if you use C/C++ you have to escape your asterisks
  * like **int foo(int \*x, int \*y)** or this **int main(int argc, char \*argv[])**
  * unless you use backticks: `int main(int argc, char *argv[])`
@@ -339,6 +354,8 @@
  * massa**. Aliquam iaculis volutpat nisi, a ultricies eros tristique eu. Suspendisse ac mattis lectus.
  * Nunc facilisis massa non maximus cursus. Etiam consequat, magna nec sollicitudin luctus, nisi leo
  * tincidunt ipsum, vitae suscipit arcu arcu id velit. Mauris auctor faucibus scelerisque.
+ *
+ * ------
  */
 
 /** Comments on lines by themselves are treated as separate paragraphs. */
