@@ -155,6 +155,22 @@ Mode == "p" && /^[[:space:]]*\*\[[[:alnum:]]+\]:[[:space:]]*/ {
 
 Mode != "none" { Out = Out filter($0); }
 
+# These are the rules for `///` single-line comments:
+Single && $0 !~ /\/\/\// {
+    Single=0;
+    Buf = "";
+    Prev = "";
+}
+Single && /\/\/\// {
+    sub(/.*\/\/\//,"");
+    Out = Out itag("p", scrub($0)) "\n";
+}
+!Single && Mode == "none" && /\/\/\// {
+    sub(/.*\/\/\//,"");
+    Single=1;
+    Out = Out itag("p", scrub($0)) "\n";
+}
+
 END {
     print "<!DOCTYPE html>\n<html><head>"
     print "<title>" Title "</title>";
@@ -489,7 +505,7 @@ function make_toc(st,              r,p,dis,t,n) {
 }
 function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
     do {
-        pre = match(st, /<pre>/); # Don't substitute in <pre> blocks        
+        pre = match(st, /<pre>/); # Don't substitute in <pre> blocks
         pos = match(st, /\[[^\]]+\]/);
         if(!pos)break;
         if(pre && pre < pos) {
@@ -662,7 +678,7 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
 	# Font Family:
     ff = "sans-serif";
-    
+
     # Alternative color scheme suggestions:
     #c1="#303F9F";c2="#0449CC";c3="#2162FA";c4="#4B80FB";c5="#EDF2FF";
     #ff="\"Trebuchet MS\", Helvetica, sans-serif";

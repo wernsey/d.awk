@@ -2,7 +2,7 @@ d.awk
 =====
 
 An [Awk][] script to generate documentation from [Markdown][]-formatted
-comments in C, C++, JavaScript and any other language that uses `/* */` for 
+comments in C, C++, JavaScript and any other language that uses `/* */` for
 multiline comments in its source code.
 
 For example, add a comment like this to your source file:
@@ -163,6 +163,11 @@ Things I'd like to add in the future:
   - The last item in the list gets duplicated.
   - You can work around this issue by adding a line with a space in it at the end of the file.
   - The other scripts don't have this problem.
-- [ ] Maybe allow `///` comments to also be used. 
-  - The problem is that things like lists might not carry over between blocks?
+- [x] Maybe allow `///` comments to also be used.
+  - ~~The problem is that things like lists might not carry over between blocks?~~
+  - *Implemented*, but the functionality is limited to inline elements only.
+- `xtract.awk` is missing a couple of features:
+  - [ ] `///` comments are not extracted.
+    - They are a bit of a minefield because they don't support block-level markdown.
+  - [ ] `/** Single line comments like this */` aren't extracted.
 
