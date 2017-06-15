@@ -10,19 +10,19 @@
 # without any warranty.
 
 !Multi && /\/\*\*/ {
-	Multi = 1;
-	sub(/^.*\/\*\*/,"");
+    Multi = 1;
+    sub(/^.*\/\*\*/,"");
 }
 Multi && /\*\// {
     sub(/[[:space:]]*\*\/.*/,"");
     if($0) {
-	sub(/^[[:space:]]*\*/,"");
+    sub(/^[[:space:]]*\*/,"");
         print $0 "\n";
     } else print "";
     Multi = 0;
 }
 Multi && /^[[:space:]]*\*/ {
-	sub(/^[[:space:]]*\*/,"");
+    sub(/^[[:space:]]*\*/,"");
 }
 Multi { print; }
 

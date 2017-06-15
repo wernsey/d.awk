@@ -65,13 +65,13 @@
 
 BEGIN {
 
-	# Configuration options
-	if(Title=="") Title = "Documentation";
-	if(Theme=="") Theme = 1;
-	if(Pretty=="") Pretty = 0;
-	if(HideToCLevel=="") HideToCLevel = 3;
+    # Configuration options
+    if(Title=="") Title = "Documentation";
+    if(Theme=="") Theme = 1;
+    if(Pretty=="") Pretty = 0;
+    if(HideToCLevel=="") HideToCLevel = 3;
     #TopLinks = 1;
-	#classic_underscore = 1;
+    #classic_underscore = 1;
     if(MaxWidth=="") MaxWidth="1080px";
 
     Mode = "none"; ToC = ""; ToCLevel = 1;
@@ -105,8 +105,8 @@ Multi && /\*\// {
             Buf = Buf "\n</" Open[ListLevel--] ">";
         Out = Out tag(Mode, Buf "\n");
     } else {
-	    Buf = trim(scrub(Buf));
-	    if(Buf)
+        Buf = trim(scrub(Buf));
+        if(Buf)
             Out = Out tag(Mode, Buf);
     }
     Mode = "none";
@@ -198,8 +198,8 @@ END {
     else
         print "<style><!--" CSS "\n--></style>";
     print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
-	if(ToC && match(Out, /!\[toc[-+]?\]/))
-		print "<script type=\"text/javascript\"><!--\n" \
+    if(ToC && match(Out, /!\[toc[-+]?\]/))
+        print "<script type=\"text/javascript\"><!--\n" \
             "function toggle_toc(n) {\n" \
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
             "    var btn=document.getElementById('btn-text');\n" \
@@ -214,7 +214,7 @@ END {
             "        btn.textContent=(toc.style.display=='none')?'[+]':'[-]';\n" \
             "    }\n" \
             "}\n" \
-			"//-->\n</script>";
+            "//-->\n</script>";
     if(Pretty && HasCode)
         print "<script src=\"https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js\"></script>";
     print "</head><body>";
@@ -314,7 +314,7 @@ function filter(st,       res,tmp) {
             Buf = Buf ((Buf)?"\n":"") substr(st, RSTART+RLENGTH);
         else {
             gsub(/\t/,"    ",Buf);
-			if(length(trim(Buf)) > 0) {
+            if(length(trim(Buf)) > 0) {
                 Lang = "";
                 if(match(Preterm, /^[[:space:]]*```+/)) {
                     Lang = trim(substr(Preterm, RSTART+RLENGTH)); 
@@ -323,7 +323,7 @@ function filter(st,       res,tmp) {
                         HasCode=1;
                     }
                 }
-            	res = tag("pre", tag("code", escape(Buf), Lang));
+                res = tag("pre", tag("code", escape(Buf), Lang));
             }
             pop();
             if(Preterm) sub(/^[[:space:]]*```+[[:alnum:]]*/,"",st);
@@ -366,138 +366,138 @@ function filter(st,       res,tmp) {
     return res;
 }
 function scrub(st,    mp, ms, me, r, p, tg, a) {
-	sub(/  $/,"<br>\n",st);
-	gsub(/(  |[[:space:]]+\\)\n/,"<br>\n",st);
-	gsub(/(  |[[:space:]]+\\)$/,"<br>\n",st);
-	while(match(st, /(__?|\*\*?|~~|`+|[&><\\])/)) {
-		a = substr(st, 1, RSTART-1);
-		mp = substr(st, RSTART, RLENGTH);
-		ms = substr(st, RSTART-1,1);
-		me = substr(st, RSTART+RLENGTH, 1);
-		p = RSTART+RLENGTH;
+    sub(/  $/,"<br>\n",st);
+    gsub(/(  |[[:space:]]+\\)\n/,"<br>\n",st);
+    gsub(/(  |[[:space:]]+\\)$/,"<br>\n",st);
+    while(match(st, /(__?|\*\*?|~~|`+|[&><\\])/)) {
+        a = substr(st, 1, RSTART-1);
+        mp = substr(st, RSTART, RLENGTH);
+        ms = substr(st, RSTART-1,1);
+        me = substr(st, RSTART+RLENGTH, 1);
+        p = RSTART+RLENGTH;
 
-		if(!classic_underscore && match(mp,/_+/)) {
-			if(match(ms,/[[:alnum:]]/) && match(me,/[[:alnum:]]/)) {
-				tg = substr(st, 1, index(st, mp));
-				r = r tg;
-				st = substr(st, index(st, mp) + 1);
-				continue;
-			}
-		}
-		st = substr(st, p);
-		r = r a;
-		ms = "";
+        if(!classic_underscore && match(mp,/_+/)) {
+            if(match(ms,/[[:alnum:]]/) && match(me,/[[:alnum:]]/)) {
+                tg = substr(st, 1, index(st, mp));
+                r = r tg;
+                st = substr(st, index(st, mp) + 1);
+                continue;
+            }
+        }
+        st = substr(st, p);
+        r = r a;
+        ms = "";
 
-		if(mp == "\\") {
-			if(match(st, /^!?\[/)) {
-				r = r "\\" substr(st, RSTART, RLENGTH);
-				st = substr(st, 2);
-			} else if(match(st, /^(\*\*|__|~~|`+)/)) {
-				r = r substr(st, 1, RLENGTH);
-				st = substr(st, RLENGTH+1);
-			} else {
-				r = r substr(st, 1, 1);
-				st = substr(st, 2);
-			}
-			continue;
-		} else if(mp == "_" || mp == "*") {
-			if(match(me,/[[:space:]]/)) {
-				r = r mp;
-				continue;
-			}
-			p = index(st, mp);
-			while(p && match(substr(st, p-1, 1),/[\\[:space:]]/)) {
-				ms = ms substr(st, 1, p-1) mp;
-				st = substr(st, p + length(mp));
-				p = index(st, mp);
-			}
-			if(!p) {
-				r = r mp ms;
-				continue;
-			}
-			ms = ms substr(st,1,p-1);
-			r = r itag("em", scrub(ms));
-			st = substr(st,p+length(mp));
-		} else if(mp == "__" || mp == "**") {
-			if(match(me,/[[:space:]]/)) {
-				r = r mp;
-				continue;
-			}
-			p = index(st, mp);
-			while(p && match(substr(st, p-1, 1),/[\\[:space:]]/)) {
-				ms = ms substr(st, 1, p-1) mp;
-				st = substr(st, p + length(mp));
-				p = index(st, mp);
-			}
-			if(!p) {
-				r = r mp ms;
-				continue;
-			}
-			ms = ms substr(st,1,p-1);
-			r = r itag("strong", scrub(ms));
-			st = substr(st,p+length(mp));
-		} else if(mp == "~~") {
-			p = index(st, mp);
-			if(!p) {
-				r = r mp;
-				continue;
-			}
-			while(p && substr(st, p-1, 1) == "\\") {
-				ms = ms substr(st, 1, p-1) mp;
-				st = substr(st, p + length(mp));
-				p = index(st, mp);
-			}
-			ms = ms substr(st,1,p-1);
-			r = r itag("del", scrub(ms));
-			st = substr(st,p+length(mp));
-		} else if(match(mp, /`+/)) {
-			p = index(st, mp);
-			if(!p) {
-				r = r mp;
-				continue;
-			}
-			ms = substr(st,1,p-1);
-			r = r itag("code", escape(ms));
-			st = substr(st,p+length(mp));
-		} else if(mp == ">") {
-			r = r "&gt;";
-		} else if(mp == "<") {
+        if(mp == "\\") {
+            if(match(st, /^!?\[/)) {
+                r = r "\\" substr(st, RSTART, RLENGTH);
+                st = substr(st, 2);
+            } else if(match(st, /^(\*\*|__|~~|`+)/)) {
+                r = r substr(st, 1, RLENGTH);
+                st = substr(st, RLENGTH+1);
+            } else {
+                r = r substr(st, 1, 1);
+                st = substr(st, 2);
+            }
+            continue;
+        } else if(mp == "_" || mp == "*") {
+            if(match(me,/[[:space:]]/)) {
+                r = r mp;
+                continue;
+            }
+            p = index(st, mp);
+            while(p && match(substr(st, p-1, 1),/[\\[:space:]]/)) {
+                ms = ms substr(st, 1, p-1) mp;
+                st = substr(st, p + length(mp));
+                p = index(st, mp);
+            }
+            if(!p) {
+                r = r mp ms;
+                continue;
+            }
+            ms = ms substr(st,1,p-1);
+            r = r itag("em", scrub(ms));
+            st = substr(st,p+length(mp));
+        } else if(mp == "__" || mp == "**") {
+            if(match(me,/[[:space:]]/)) {
+                r = r mp;
+                continue;
+            }
+            p = index(st, mp);
+            while(p && match(substr(st, p-1, 1),/[\\[:space:]]/)) {
+                ms = ms substr(st, 1, p-1) mp;
+                st = substr(st, p + length(mp));
+                p = index(st, mp);
+            }
+            if(!p) {
+                r = r mp ms;
+                continue;
+            }
+            ms = ms substr(st,1,p-1);
+            r = r itag("strong", scrub(ms));
+            st = substr(st,p+length(mp));
+        } else if(mp == "~~") {
+            p = index(st, mp);
+            if(!p) {
+                r = r mp;
+                continue;
+            }
+            while(p && substr(st, p-1, 1) == "\\") {
+                ms = ms substr(st, 1, p-1) mp;
+                st = substr(st, p + length(mp));
+                p = index(st, mp);
+            }
+            ms = ms substr(st,1,p-1);
+            r = r itag("del", scrub(ms));
+            st = substr(st,p+length(mp));
+        } else if(match(mp, /`+/)) {
+            p = index(st, mp);
+            if(!p) {
+                r = r mp;
+                continue;
+            }
+            ms = substr(st,1,p-1);
+            r = r itag("code", escape(ms));
+            st = substr(st,p+length(mp));
+        } else if(mp == ">") {
+            r = r "&gt;";
+        } else if(mp == "<") {
 
-			p = index(st, ">");
-			if(!p) {
-				r = r "&lt;";
-				continue;
-			}
-			tg = substr(st, 1, p - 1);
-			if(match(tg,/^[[:alpha:]]+[[:space:]]/)) {
-				a = substr(tg,RSTART+RLENGTH-1);
-				tg = substr(tg,1,RLENGTH-1);
-			} else
-				a = "";
+            p = index(st, ">");
+            if(!p) {
+                r = r "&lt;";
+                continue;
+            }
+            tg = substr(st, 1, p - 1);
+            if(match(tg,/^[[:alpha:]]+[[:space:]]/)) {
+                a = substr(tg,RSTART+RLENGTH-1);
+                tg = substr(tg,1,RLENGTH-1);
+            } else
+                a = "";
 
-			if(match(tolower(tg), "^/?(a|abbr|div|span|blockquote|pre|img|code|p|em|strong|sup|sub|del|ins|s|u|b|i|br|hr|ul|ol|li|table|thead|tfoot|tbody|tr|th|td|caption|column|col|colgroup|figure|figcaption|dl|dd|dt|mark|cite|q|var|samp|small)$")) {
-				r = r "<" tg a ">";
-			} else if(match(tg, "^[[:alpha:]]+://[[:graph:]]+$")) {
-				if(!a) a = tg;
-				r = r "<a href=\"" tg "\">" a "</a>";
-			} else if(match(tg, "^[[:graph:]]+@[[:graph:]]+$")) {
-				if(!a) a = tg;
-				r = r "<a href=\"" obfuscate("mailto:" tg) "\">" obfuscate(a) "</a>";
-			} else {
-				r = r "&lt;";
-				continue;
-			}
+            if(match(tolower(tg), "^/?(a|abbr|div|span|blockquote|pre|img|code|p|em|strong|sup|sub|del|ins|s|u|b|i|br|hr|ul|ol|li|table|thead|tfoot|tbody|tr|th|td|caption|column|col|colgroup|figure|figcaption|dl|dd|dt|mark|cite|q|var|samp|small)$")) {
+                r = r "<" tg a ">";
+            } else if(match(tg, "^[[:alpha:]]+://[[:graph:]]+$")) {
+                if(!a) a = tg;
+                r = r "<a href=\"" tg "\">" a "</a>";
+            } else if(match(tg, "^[[:graph:]]+@[[:graph:]]+$")) {
+                if(!a) a = tg;
+                r = r "<a href=\"" obfuscate("mailto:" tg) "\">" obfuscate(a) "</a>";
+            } else {
+                r = r "&lt;";
+                continue;
+            }
 
-			st = substr(st, p + 1);
-		} else if(mp == "&") {
-			if(match(st, /^[#[:alnum:]]+;/)) {
-				r = r "&" substr(st, 1, RLENGTH);
-				st = substr(st, RLENGTH+1);
-			} else {
-				r = r "&amp;";
-			}
-		}
-	}
+            st = substr(st, p + 1);
+        } else if(mp == "&") {
+            if(match(st, /^[#[:alnum:]]+;/)) {
+                r = r "&" substr(st, 1, RLENGTH);
+                st = substr(st, RLENGTH+1);
+            } else {
+                r = r "&amp;";
+            }
+        }
+    }
     return r st;
 }
 
@@ -535,10 +535,10 @@ function make_toc(st,              r,p,dis,t,n) {
         ToC = ToC "</ul>";
     p = match(st, /!\[toc[-+]?\]/);
     while(p) {
-		++n;
-		dis = index(substr(st,RSTART,RLENGTH),"+");
-		t = "<div>\n<a class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text\">" (dis?"[-]":"[+]") "</span>&nbsp;Contents</a>\n" \
-			"<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc-1\">" ToC "</ul>\n</div>\n</div>";
+        ++n;
+        dis = index(substr(st,RSTART,RLENGTH),"+");
+        t = "<div>\n<a class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text\">" (dis?"[-]":"[+]") "</span>&nbsp;Contents</a>\n" \
+            "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc-1\">" ToC "</ul>\n</div>\n</div>";
         r = r substr(st,1,RSTART-1);
         if(substr(st,RSTART-1,1) != "\\")
             r = r t;
@@ -636,21 +636,21 @@ function fix_footnotes(st,         r,p,n,i,d,fn,fc) {
     return r st;
 }
 function fix_abbrs(str,         st,k,r,p) {
-	for(k in Abbrs) {
-		r = "";
-		st = str;
-		t = escape(Abbrs[toupper(k)]);
-		gsub(/&/,"\\&", t);
-		p = match(st,"[^[:alnum:]]" k "[^[:alnum:]]");
-		while(p) {
-			r = r substr(st, 1, RSTART);
-			r = r "<abbr title=\"" t "\">" k "</abbr>";
-			st = substr(st, RSTART+RLENGTH-1);
-			p = match(st,"[^[:alnum:]]" k "[^[:alnum:]]");
-		}
-		str = r st;
-	}
-	return str;
+    for(k in Abbrs) {
+        r = "";
+        st = str;
+        t = escape(Abbrs[toupper(k)]);
+        gsub(/&/,"\\&", t);
+        p = match(st,"[^[:alnum:]]" k "[^[:alnum:]]");
+        while(p) {
+            r = r substr(st, 1, RSTART);
+            r = r "<abbr title=\"" t "\">" k "</abbr>";
+            st = substr(st, RSTART+RLENGTH-1);
+            p = match(st,"[^[:alnum:]]" k "[^[:alnum:]]");
+        }
+        str = r st;
+    }
+    return str;
 }
 function tag(t, body, attr) {
     if(attr)
@@ -687,7 +687,7 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["h3"] = "color:%color3%;border-bottom:1px solid %color3%;padding:0.1em 0.1em;";
     css["h4,h5,h6"] = "color:%color4%;padding:0.1em 0.1em;";
     css["h1,h2,h3,h4,h5,h6"] = "font-weight:normal;line-height:1.2em;";
-	css["h4"] = "border-bottom:1px solid %color4%";
+    css["h4"] = "border-bottom:1px solid %color4%";
     css["p"] = "margin:0.5em 0.1em;"
     css["hr"] = "background:%color1%;height:1px;border:0;"
     css["a"] = "color:%color2%;";
@@ -722,7 +722,7 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
 
     # Colors:
     c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
-	# Font Family:
+    # Font Family:
     ff = "sans-serif";
 
     # Alternative color scheme suggestions:
