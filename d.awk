@@ -10,6 +10,8 @@
 #  * Markdown here...
 #  */
 #
+# Alternatively, three slashes can also be used: `/// Markdown here`
+#
 # Configuration options. You can set these in the BEGIN block below, or
 # pass them to the script through the `-v` command-line option:
 # - `Title="My Document Title"` to set the <title/> in the <head/> section of the HTML
@@ -204,14 +206,14 @@ END {
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
             "    var btn=document.getElementById('btn-text');\n" \
             "    toc.style.display=(toc.style.display=='none')?'block':'none';\n" \
-            "    btn.textContent=(toc.style.display=='none')?'[+]':'[-]';\n" \
+            "    btn.innerHTML=(toc.style.display=='none')?'&#x25BC;':'&#x25B2;';\n" \
             "}\n" \
             "function toggle_toc_ul(n) {   \n" \
             "    var toc=document.getElementById('toc-ul-' + n);   \n" \
             "    var btn=document.getElementById('toc-btn-' + n);   \n" \
             "    if(toc) {\n" \
             "        toc.style.display=(toc.style.display=='none')?'block':'none';   \n" \
-            "        btn.textContent=(toc.style.display=='none')?'[+]':'[-]';\n" \
+            "        btn.innerHTML=(toc.style.display=='none')?'&#x25BC;':'&#x25B2;';\n" \
             "    }\n" \
             "}\n" \
             "//-->\n</script>";
@@ -317,9 +319,9 @@ function filter(st,       res,tmp) {
             if(length(trim(Buf)) > 0) {
                 Lang = "";
                 if(match(Preterm, /^[[:space:]]*```+/)) {
-                    Lang = trim(substr(Preterm, RSTART+RLENGTH)); 
-                    if(Lang) { 
-                        Lang = "class=\"prettyprint lang-" Lang "\""; 
+                    Lang = trim(substr(Preterm, RSTART+RLENGTH));
+                    if(Lang) {
+                        Lang = "class=\"prettyprint lang-" Lang "\"";
                         HasCode=1;
                     }
                 }
@@ -516,10 +518,10 @@ function heading(level, st,       res, href) {
     for(;ToCLevel < level; ToCLevel++) {
         ToC_ID++;
         if(ToCLevel < HideToCLevel) {
-            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">[-]</a>";
+            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25B2;</a>";
             ToC = ToC "<ul class=\"toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
         } else {
-            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">[+]</a>";
+            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BC;</a>";
             ToC = ToC "<ul style=\"display:none;\" class=\"toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
         }
     }
@@ -537,7 +539,7 @@ function make_toc(st,              r,p,dis,t,n) {
     while(p) {
         ++n;
         dis = index(substr(st,RSTART,RLENGTH),"+");
-        t = "<div>\n<a class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text\">" (dis?"[-]":"[+]") "</span>&nbsp;Contents</a>\n" \
+        t = "<div>\n<a class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text\">" (dis?"&#x25B2;":"&#x25BC;") "</span>&nbsp;Contents</a>\n" \
             "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc-1\">" ToC "</ul>\n</div>\n</div>";
         r = r substr(st,1,RSTART-1);
         if(substr(st,RSTART-1,1) != "\\")
