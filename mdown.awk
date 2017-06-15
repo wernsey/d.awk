@@ -20,7 +20,8 @@ BEGIN {
     #classic_underscore = 1;
     if(MaxWidth=="") MaxWidth="1080px";
 
-    Mode = "p"; ToC = ""; ToCLevel = 1;
+    Mode = "p";
+    ToC = ""; ToCLevel = 1;
     CSS = init_css(Theme);
     for(i = 0; i < 128; i++)
         _ord[sprintf("%c", i)] = i;
@@ -29,60 +30,12 @@ BEGIN {
 
 {gsub(/\r/,"");}
 
-/^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/ {
-    linkdesc = ""; lastlink = 0;
-    match($0,/\[.*\]/);
-    LinkRef = tolower(substr($0, RSTART+1, RLENGTH-2));
-    st = substr($0, RSTART+RLENGTH+2);
-    match(st, /[^[:space:]]+/);
-    url = substr(st, RSTART, RLENGTH);
-    st = substr(st, RSTART+RLENGTH+1);
-    if(match(url, /^<.*>/))
-        url = substr(url, RSTART+1, RLENGTH-2);
-    if(match(st, /["'(]/)) {
-        delim = substr(st, RSTART, 1);
-        edelim = (delim == "(") ? ")" : delim;
-        if(match(st, delim ".*" edelim))
-            linkdesc = substr(st, RSTART+1, RLENGTH-2);
-    }
-    LinkUrls[LinkRef] = escape(url);
-    if(!linkdesc) lastlink = 1;
-    LinkDescs[LinkRef] = escape(linkdesc);
-    next;
+{
+    Out = Out filter($0);
 }
-
-lastlink && /^[[:space:]]*["'(]/ {
-    match($0, /["'(]/);
-    delim = substr($0, RSTART, 1);
-    edelim = (delim == "(") ? ")" : delim;
-    st = substr($0, RSTART);
-    if(match(st, delim ".*" edelim))
-        LinkDescs[LinkRef] = escape(substr(st,RSTART+1,RLENGTH-2));
-    lastlink = 0;
-    next;
-}
-lastlink { lastlink = 0; }
-Mode == "p" && /^[[:space:]]*\[\^[-._[:alnum:][:space:]]+\]:[[:space:]]*/ {
-    match($0, /\[\^[[:alnum:]]+\]:/);
-    name = substr($0, RSTART+2,RLENGTH-4);
-    def = substr($0, RSTART+RLENGTH+1);
-    Footnote[tolower(name)] = scrub(def);
-    next;
-}
-Mode == "p" && /^[[:space:]]*\*\[[[:alnum:]]+\]:[[:space:]]*/ {
-    match($0, /\[[[:alnum:]]+\]/);
-    name = substr($0, RSTART+1,RLENGTH-2);
-    def = substr($0, RSTART+RLENGTH+2);
-    Abbrs[toupper(name)] = def;
-    next;
-}
-
-{ Out = Out filter($0); }
 
 END {
 
-    if(match($0, /^[[:space:]]*\*/))
-        Out = Out filter(substr($0, RSTART+RLENGTH));
     if(Mode == "ul" || Mode == "ol") {
         while(ListLevel > 1)
             Buf = Buf "\n</" Open[ListLevel--] ">";
@@ -96,9 +49,6 @@ END {
         if(Buf)
             Out = Out tag(Mode, Buf);
     }
-    Mode = "none";
-    Buf = "";
-    Prev = "";
 
     print "<!DOCTYPE html>\n<html><head>"
     print "<title>" Title "</title>";
@@ -157,9 +107,50 @@ function trim(st) {
     sub(/[[:space:]]+$/, "", st);
     return st;
 }
-function filter(st,       res,tmp) {
+function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
     if(Mode == "p") {
-        if(match(st, /^((    )| *\t)/) || match(st, /^[[:space:]]*```+[[:alnum:]]*/)) {
+        if(match(st, /^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/)) {
+            linkdesc = ""; lastlink = 0;
+            match(st,/\[.*\]/);
+            LinkRef = tolower(substr(st, RSTART+1, RLENGTH-2));
+            st = substr(st, RSTART+RLENGTH+2);
+            match(st, /[^[:space:]]+/);
+            url = substr(st, RSTART, RLENGTH);
+            st = substr(st, RSTART+RLENGTH+1);
+            if(match(url, /^<.*>/))
+                url = substr(url, RSTART+1, RLENGTH-2);
+            if(match(st, /["'(]/)) {
+                delim = substr(st, RSTART, 1);
+                edelim = (delim == "(") ? ")" : delim;
+                if(match(st, delim ".*" edelim))
+                    linkdesc = substr(st, RSTART+1, RLENGTH-2);
+            }
+            LinkUrls[LinkRef] = escape(url);
+            if(!linkdesc) lastlink = 1;
+            LinkDescs[LinkRef] = escape(linkdesc);
+            return;
+        } else if(lastlink && match(st, /^[[:space:]]*["'(]/)) {
+            match(st, /["'(]/);
+            delim = substr(st, RSTART, 1);
+            edelim = (delim == "(") ? ")" : delim;
+            st = substr(st, RSTART);
+            if(match(st, delim ".*" edelim))
+                LinkDescs[LinkRef] = escape(substr(st,RSTART+1,RLENGTH-2));
+            lastlink = 0;
+            return;
+        } else if(match(st, /^[[:space:]]*\[\^[-._[:alnum:][:space:]]+\]:[[:space:]]*/)) {
+            match(st, /\[\^[[:alnum:]]+\]:/);
+            name = substr(st, RSTART+2,RLENGTH-4);
+            def = substr(st, RSTART+RLENGTH+1);
+            Footnote[tolower(name)] = scrub(def);
+            return;
+        } else if(match(st, /^[[:space:]]*\*\[[[:alnum:]]+\]:[[:space:]]*/)) {
+            match(st, /\[[[:alnum:]]+\]/);
+            name = substr(st, RSTART+1,RLENGTH-2);
+            def = substr(st, RSTART+RLENGTH+2);
+            Abbrs[toupper(name)] = def;
+            return;
+        } else if(match(st, /^((    )| *\t)/) || match(st, /^[[:space:]]*```+[[:alnum:]]*/)) {
             Preterm = trim(substr(st, RSTART,RLENGTH));
             st = substr(st, RSTART+RLENGTH);
             if(Buf) res = tag("p", scrub(Buf));
@@ -207,6 +198,7 @@ function filter(st,       res,tmp) {
             }
         } else
             Buf = Buf st "\n";
+        lastlink = 0;
     } else if(Mode == "blockquote") {
         if(match(st, /^[[:space:]]*>[[:space:]]*$/))
             Buf = Buf "\n</p><p>";
@@ -239,7 +231,7 @@ function filter(st,       res,tmp) {
             res = res filter(st);
         }
     } else if(Mode == "ul" || Mode == "ol") {
-        if(ListLevel == 0 || match(st, /^[[:space:]]*$/) && (RLENGTH < indent[1] || RLENGTH == 0)) {
+        if(ListLevel == 0 || match(st, /^[[:space:]]*$/) && (RLENGTH <= indent[1])) {
             while(ListLevel > 1)
                 Buf = Buf "\n</" Open[ListLevel--] ">";
             res = tag(Mode, "\n" Buf "\n");
