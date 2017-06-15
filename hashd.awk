@@ -78,8 +78,8 @@ END {
 
     print "<!DOCTYPE html>\n<html><head>"
     print "<title>" Title "</title>";
-    if(stylesheet)
-        print "<link rel=\"stylesheet\" href=\"" stylesheet "\">";
+    if(StyleSheet)
+        print "<link rel=\"stylesheet\" href=\"" StyleSheet "\">";
     else
         print "<style><!--" CSS "\n--></style>";
     print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";

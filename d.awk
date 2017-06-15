@@ -199,7 +199,7 @@ END {
         print "<script type=\"text/javascript\"><!--\n" \
             "function toggle_toc(n) {\n" \
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
-            "    var btn=document.getElementById('btn-text');\n" \
+            "    var btn=document.getElementById('btn-text-' + n);\n" \
             "    toc.style.display=(toc.style.display=='none')?'block':'none';\n" \
             "    btn.innerHTML=(toc.style.display=='none')?'&#x25BC;':'&#x25B2;';\n" \
             "}\n" \
@@ -248,7 +248,7 @@ function trim(st) {
 function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
     if(Mode == "p") {
         if(match(st, /^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/)) {
-            linkdesc = ""; lastlink = 0;
+            linkdesc = ""; LastLink = 0;
             match(st,/\[.*\]/);
             LinkRef = tolower(substr(st, RSTART+1, RLENGTH-2));
             st = substr(st, RSTART+RLENGTH+2);
@@ -264,17 +264,17 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
                     linkdesc = substr(st, RSTART+1, RLENGTH-2);
             }
             LinkUrls[LinkRef] = escape(url);
-            if(!linkdesc) lastlink = 1;
+            if(!linkdesc) LastLink = 1;
             LinkDescs[LinkRef] = escape(linkdesc);
             return;
-        } else if(lastlink && match(st, /^[[:space:]]*["'(]/)) {
+        } else if(LastLink && match(st, /^[[:space:]]*["'(]/)) {
             match(st, /["'(]/);
             delim = substr(st, RSTART, 1);
             edelim = (delim == "(") ? ")" : delim;
             st = substr(st, RSTART);
             if(match(st, delim ".*" edelim))
                 LinkDescs[LinkRef] = escape(substr(st,RSTART+1,RLENGTH-2));
-            lastlink = 0;
+            LastLink = 0;
             return;
         } else if(match(st, /^[[:space:]]*\[\^[-._[:alnum:][:space:]]+\]:[[:space:]]*/)) {
             match(st, /\[\^[[:alnum:]]+\]:/);
@@ -336,7 +336,7 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
             }
         } else
             Buf = Buf st "\n";
-        lastlink = 0;
+        LastLink = 0;
     } else if(Mode == "blockquote") {
         if(match(st, /^[[:space:]]*>[[:space:]]*$/))
             Buf = Buf "\n</p><p>";
@@ -574,15 +574,19 @@ function make_toc(st,              r,p,dis,t,n) {
         ToC = ToC "</ul>";
     p = match(st, /!\[toc[-+]?\]/);
     while(p) {
+        if(substr(st,RSTART-1,1) == "\\") {
+            r = r substr(st,1,RSTART-2) substr(st,RSTART,RLENGTH);
+            st = substr(st,RSTART+RLENGTH);
+            p = match(st, /!\[toc[-+]?\]/);
+            continue;
+        }
+
         ++n;
         dis = index(substr(st,RSTART,RLENGTH),"+");
-        t = "<div>\n<a class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text\">" (dis?"&#x25B2;":"&#x25BC;") "</span>&nbsp;Contents</a>\n" \
+        t = "<div>\n<a id=\"toc-button-" n "\" class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text-" n "\">" (dis?"&#x25B2;":"&#x25BC;") "</span>&nbsp;Contents</a>\n" \
             "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc-1\">" ToC "</ul>\n</div>\n</div>";
         r = r substr(st,1,RSTART-1);
-        if(substr(st,RSTART-1,1) != "\\")
-            r = r t;
-        else
-            r = substr(r,1,length(r)-1) substr(st,RSTART,RLENGTH);
+        r = r t;
         st = substr(st,RSTART+RLENGTH);
         p = match(st, /!\[toc[-+]?\]/);
     }
@@ -651,6 +655,12 @@ function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
 function fix_footnotes(st,         r,p,n,i,d,fn,fc) {
     p = match(st, /\[\^[^\]]+\]/);
     while(p) {
+        if(substr(st,RSTART-2,1) == "\\") {
+            r = r substr(st,1,RSTART-3) substr(st,RSTART,RLENGTH);
+            st = substr(st,RSTART+RLENGTH);
+            p = match(st, /\[\^[^\]]+\]/);
+            continue;
+        }
         r = r substr(st,1,RSTART-1);
         d = substr(st,RSTART+2,RLENGTH-3);
         n = tolower(d);

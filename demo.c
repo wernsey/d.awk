@@ -6,6 +6,8 @@
  * This file demonstrates how to comment your code with
  * the `comdown.awk` script. It also serves as a functional test.
  *
+ * The Table of Contents above was inserted with `\![toc]`:
+ *
  * Comments in your code that are to be included in the output must start with
  * the sequence `/**`.
  * Other comments and source code are ignored by the script.
