@@ -1,5 +1,5 @@
-d.awk
-=====
+d.awk - Source code documentation tool
+======================================
 
 An [Awk][] script to generate documentation from [Markdown][]-formatted
 comments in C, C++, JavaScript and any other language that uses `/* */` for
@@ -31,7 +31,8 @@ Then use Awk to run the `d.awk` script on it like so:
 ```
 
 The text within the `/** */` comment blocks are parsed as Markdown, and
-rendered as HTML. Comments may also start with `///`.
+rendered as HTML. Comments may also start with three slashes: `/// Markdown
+here`.
 
 A typical use case to bundle the `d.awk` script with your project's source and
 to then add a `docs` target to the Makefile:
@@ -39,6 +40,21 @@ to then add a `docs` target to the Makefile:
     docs: api-doc.html
     api-doc.html: header.h d.awk
         $(AWK) -f d.awk $< > $@
+
+The script can also generate HTML from a normal Markdown document using the `-v
+Clean=1` command-line option:
+
+```sh
+./d.awk -vPretty=1 -v Clean=1 README.md > README.html
+```
+
+There are additional scripts in the distribution:
+
+ * [mdown.awk](mdown.awk) - Generates HTML from a normal Markdown file.
+ * [xtract.awk](xtract.awk) - Extracts the Markdown comments of a source file.
+ * [wrap.awk](wrap.awk) - Formats a Markdown text file to fit on a page.
+
+## Features
 
 It supports most of Markdown:
 * **Bold**, _italic_ and `monospaced` text.
@@ -51,24 +67,20 @@ It supports most of Markdown:
 
 It also supports a number of extensions, mostly based on GitHub syntax:
 * ```` ``` ````-style code blocks
-  * You can specify a language according to Github's [Syntax Highlighting][github-syntax]
-    rules, for example ```` ```java ````
+  * You can specify a language according to Github's [Syntax
+    Highlighting][github-syntax] rules, for example ```` ```java ````
   * This requires that you specify `-vPretty=1` on the command line.  \
-    (It is disabled by default because the generated HTML uses a third-party script)
-  * It uses Google's [code-prettify][] library for the syntax highlighting.   
+    (It is disabled by default because the generated HTML uses a third-party
+    script)
+  * It uses Google's [code-prettify][] library for the syntax highlighting.
 * [x] GitHub-style task lists
 * [MultiMarkdown][]-style footnotes and abbreviations.
 * Backslash at the end of a line  \
-  forces a line break.
+forces a line break.
+* There is a special `\![toc]` mode that generates a Table of Contents automatically.
 
-The file [demo.c](demo.c) in the distribution serves as an example, user guide and test
-at the same time.
-
-There are additional scripts in the distribution:
-
- * [mdown.awk](mdown.awk) - Generates HTML from a normal Markdown file.
- * [xtract.awk](xtract.awk) - Extracts the Markdown comments of a source file.
- * [wrap.awk](wrap.awk) - Formats a Markdown text file to fit on a page.
+The file [demo.c](demo.c) in the distribution serves as an example, user guide
+and test at the same time.
 
 [Awk]: https://en.wikipedia.org/wiki/AWK
 [Markdown]: https://en.wikipedia.org/wiki/Markdown
@@ -114,8 +126,6 @@ like so:
 
 ```sh
 ./d.awk demo.c > doc.html
-
-# alternatively: awk -f d.awk demo.c > doc.html
 ```
 
 The file `demo.c` in the distribution provides a demonstration of all the
@@ -124,12 +134,13 @@ features and the supported syntax.
 Configuration options can be set in the `BEGIN` block of the script, or passed
 to the script through Awk's `-v` command-line option:
 - `-v Title="My Document Title"` to set the `<title/>` of the HTML
-- `-v stylesheet="style.css"` to use a separate file as style sheet.
+- `-v StyleSheet=style.css` to use a separate file as style sheet.
 - `-v TopLinks=1` to have links to the top of the document next to headers.
-- `-v Pretty=1` enable Syntax highlighting with Google's [code-prettify][] library.
-- `-v HideToCLevel=n` specifies the level of the Table of Contents that should be 
-  collapsed by default. For example, a value of 3 means that headers above level 3
-  will be collapsed in the Table of Contents initially.
+- `-v Pretty=1` enable Syntax highlighting with Google's [code-prettify][]
+  library.
+- `-v HideToCLevel=n` specifies the level of the Table of Contents that should
+  be collapsed by default. For example, a value of 3 means that headers above
+  level 3 will be collapsed in the Table of Contents initially.
 - `-v classic_underscore=1` words_with_underscores behave like old markdown
   where the underscores in the word counts as emphasis. The default behaviour
   is to have `words_like_this` not contain any emphasis.
@@ -141,11 +152,13 @@ script.
 
 Creates an HTML document from a Markdown file.
 
+It is functionally equivalent to using `d.awk` with the `-v Clean=1` command
+line option.
+
 For example, to generate HTML from this `README.md` file, type:
 
 ```sh
 ./mdown.awk README.md > README.html
-# awk -f mdown.awk README.md > README.html
 ```
 
 The command line options are the same as `d.awk`'s.
@@ -157,7 +170,6 @@ Markdown.
 
 ```sh
 ./xtract.awk demo.c > demo.md
-#aternatively: awk -f xtract.awk demo.c > demo.md
 ```
 
 A use case is to extract the comments from a source file into a new Markdown
@@ -179,7 +191,7 @@ To specify a different width, use `-v Width=60` from the command line.
 
 ## License
 
-The license is officially the MIT license (see the file [LICENSE](LICENSE) for 
+The license is officially the MIT license (see the file [LICENSE](LICENSE) for
 details), but the individual files may be redistributed with this notice:
 
     (c) 2016 Werner Stoop
@@ -202,19 +214,9 @@ details), but the individual files may be redistributed with this notice:
 
 Things I'd like to add in the future:
 
-- [x] Syntax highlighting for ```` ``` ````-style code blocks.
-  - Using [GitHub's syntax](https://help.github.com/articles/creating-and-highlighting-code-blocks/)
-  - Google's code prettify is [here](https://github.com/google/code-prettify)
-  - It should be optional (with default `OFF`), because it is going to download additional scripts.
-  - This doesn't mean that I can't have the proper classes for the `<code>` blocks, though.
-- [ ] The `mdown.awk` script doesn't always like lists at the end of a file.
+- [x] The `mdown.awk` script doesn't always like lists at the end of a file.
   - The last item in the list gets duplicated.
-  - You can work around this issue by adding a line with a space in it at the end of the file.
+  - You can work around this issue by adding a line with a space in it at the
+    end of the file.
   - The other scripts don't have this problem.
-- [x] Maybe allow `///` comments to also be used.
-  - ~~The problem is that things like lists might not carry over between blocks?~~
-  - ~~*Implemented*, but the functionality is limited to inline elements only.~~
-- `xtract.awk` is missing a couple of features:
-  - [x] `///` comments are not extracted.
-    - They are a bit of a minefield because they don't support block-level markdown.
-  - [x] `/** Single line comments like this */` aren't extracted.
+- `wrap.awk` adds too much whitespace to code blocks...
