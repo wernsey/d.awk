@@ -1,9 +1,14 @@
-d.awk - Source code documentation tool
-======================================
+d.awk - Source code documentation script
+========================================
 
-An [Awk][] script to generate documentation from [Markdown][]-formatted
-comments in C, C++, JavaScript and any other language that uses `/* */` for
-multiline comments in its source code.
+Some [Awk][] scripts to generate documentation from [Markdown][]-formatted
+comments in source code.
+
+The [d.awk][] script creates documentation for languages that use `/* */` 
+for multiline comments, like C, C++, Java, C#, JavaScript.
+
+The file [hashd.awk][] does the same, but for languages that use `#` symbols
+for comments, like Perl, Python, Ruby, and others.
 
 For example, add a comment like this to your source file:
 
@@ -50,10 +55,17 @@ Clean=1` command-line option:
 
 There are additional scripts in the distribution:
 
- * [mdown.awk](mdown.awk) - Generates HTML from a normal Markdown file.
- * [xtract.awk](xtract.awk) - Extracts the Markdown comments of a source file.
- * [wrap.awk](wrap.awk) - Formats a Markdown text file to fit on a page.
+ * [hashd.awk][] - Like `d.awk`, but for languages that use `#` symbols for comments
+ * [mdown.awk][] - Generates HTML from a normal Markdown file.
+ * [xtract.awk][] - Extracts the Markdown comments of a source file.
+ * [wrap.awk][] - Formats a Markdown text file to fit on a page.
 
+[d.awk]: d.awk
+[hashd.awk]: hashd.awk
+[mdown.awk]: mdown.awk
+[xtract.awk]: xtract.awk
+[wrap.awk]: wrap.awk
+ 
 ## Features
 
 It supports most of Markdown:
@@ -148,6 +160,34 @@ to the script through Awk's `-v` command-line option:
 The stylesheet for the output HTML can also be modified at the bottom of the
 script.
 
+### hashd.awk
+
+Like `d.awk`, but generates documentation for programming languages that uses
+`#` symbols for comments.
+
+For example, to generate an HTML file from the comments at the top of ``
+```
+./hashd.awk d.awk > demo.html
+```
+
+The first comment must start with two `#` symbols. The following is an example
+in Python:
+
+```python
+##
+# My Project
+# ==========
+#
+# This is some _Markdown documentation_ in a `source
+# file`.
+#
+print("Hello, World!")
+```
+
+If you have a language that uses a different symbol for comments, you can use
+this file and modify the regular expressions at the top to match your language's
+comment syntax.
+
 ### mdown.awk
 
 Creates an HTML document from a Markdown file.
@@ -200,7 +240,7 @@ details), but the individual files may be redistributed with this notice:
     notice and this notice are preserved. This file is offered as-is,
     without any warranty.
 
-## References:
+## References
 
  - <https://en.wikipedia.org/wiki/AWK>
  - <https://en.wikipedia.org/wiki/Markdown>
@@ -210,7 +250,7 @@ details), but the individual files may be redistributed with this notice:
  - <http://fletcher.github.io/MultiMarkdown-4/syntax>
  - <http://spec.commonmark.org>
 
-## TODO:
+## TODO
 
 Things I'd like to add in the future:
 

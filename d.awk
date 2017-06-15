@@ -549,8 +549,8 @@ function heading(level, st,       res, href) {
     href = strip_tags(href);
     gsub(/[^ [:alnum:]]+/, "", href);
     gsub(/ +/, "-", href);
-    LinkUrls[href] = "#" href;
-    LinkUrls[tolower(st)] = "#" href;
+    if(!LinkUrls[href]) LinkUrls[href] = "#" href;
+    if(!LinkUrls[tolower(st)]) LinkUrls[tolower(st)] = "#" href;
     res = tag("h" level, st (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":""), "id=\"" href "\"");
     for(;ToCLevel < level; ToCLevel++) {
         ToC_ID++;
