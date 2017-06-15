@@ -57,7 +57,7 @@
  *       1. Item 1.1
  *          1981\. This line started with a number.
  *       1. Item 1.2;
- *          This item consists of multiple lines
+ *          This item consists of multiple lines  
  *          with a forced line break (two spaces at the end of the last line).
  *  1. Item 2
  *         * Item 2.1; List styles can be mixed.
@@ -84,7 +84,7 @@
  *
  * GitHub-style task lists are also supported:
  *   - [ ] Task 1
- *     - [] Subtask 1a
+ *     - [ ] Subtask 1a
  *     - [X] Subtask 1b
  *   - [x] Task 2 - **completed.**
  *   - [] Task 3 - the space between the `[` and `]` is necessary.
@@ -105,10 +105,10 @@
  *
  * ### Code Blocks
  * Code indented with tabs:
- *  //Some code, indented with a single tab:
- *  int main(int argc, char *argv[]) {
- *      return 0;
- *  }
+ *	//Some code, indented with a single tab:
+ *	int main(int argc, char *argv[]) {
+ *		return 0;
+ *	}
  *
  * Code indented with spaces:
  *    //Some code, indented with spaces
@@ -186,7 +186,7 @@
  * * e-mail addresses get obfuscated: <address@example.com>
  * * Relative links that refer to specific headings are supported.
  *   For example [Block Level Formatting][block-level-formatting] - replace spaces with -, remove all
- *   other non-alphanumerics and everything lowercase.
+ *   other non-alphanumerics and everything lowercase.  
  *   Alternatively [Block Level Formatting][Block Level Formatting] or [ Using HTML in Documents ][]
  * * [This link](http://example.com/some_random_page) has \_underscores\_ where
  *   the usual rules about escaping apply, but [this one][underscores] doesn't.
@@ -203,10 +203,10 @@
  * Images
  * ------
  *
- * Image syntax `\![Image Alt Text](example.png)`
+ * Image syntax `\![Image Alt Text](example.png)`  
  * Escaping images `\![Image Alt Text](example.png)` and links `\[Link Alt Text](example.com)`
  *
- * Images can be encoded as Data URIs: ![Red Dot][reddot]
+ * Images can be encoded as Data URIs: ![Red Dot][reddot]  
  * <sub>The red dot comes from [Wikipedia][datauri]</sub>
  *
  * [dataURI]: https://en.wikipedia.org/wiki/Data_URI_scheme "Data URI scheme"
@@ -226,7 +226,7 @@
  * * \`\`Code Block with embedded backtick: \` \`\` produces ``Code Block with embedded backtick: ` ``
  * * \~~Strike through\~~ produces ~~Strike through~~
  * * _You **can** mix styles within `other` styles_
- * * But the backtick code blocks cause asterisks and underscores to be ignored:
+ * * But the backtick code blocks cause asterisks and underscores to be ignored:  
  *   `void do_something(Widget *foo, int p, int q, Wotzit *bar, int zoop)`
  * * Whitespace surrounding the * or _ will cause it to be treated as literal:
  *   * _ this text would not be emphasized _ and neither would this * mmmm *
@@ -297,7 +297,7 @@
  * A `<span/>` element:
  * <span class="highlight">A `<span/>` element</span>
  *
- * Not all HTML tags are supported. For example:
+ * Not all HTML tags are supported. For example:  
  * <script type="text/javascript">$(function(){alert("GOTCHA!");});</script>
  *
  * This is how you work around the limitations of block quotes:
@@ -358,7 +358,7 @@
  *
  * ------
  */
-
+ 
 /** Comments on lines by themselves are treated as separate paragraphs. */
 
 /// Three slashes syntax can be used.  \
@@ -372,9 +372,12 @@
 ///   - Item 2b
 /// - Item 3
 
+/// [Links in single line comments][link-single] like this used to be problematic.
+/// [link-single]: http://example.com/linksingle
+
 /* This comment is not processed because it doesn't start with the ** */
 
-//Some text that should not be converted.
+// Some text that should not be converted.
 int main(int argc, char *argv[]) {
     /** You can put comments
      * throughout your code.
