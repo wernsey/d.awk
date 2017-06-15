@@ -1,79 +1,13 @@
 #! /usr/bin/awk -f
 
 ##
-# d.awk
-# =====
+# hashd.awk
+# =========
 #
-# Converts Markdown in C/C++-style code comments to HTML.  \
+# Converts Markdown in code comments to HTML of languages that use `#` symbols
+# for code comments.
+#
 # <https://github.com/wernsey/d.awk>
-#
-# The comments must have the `/** */` pattern. Every line in the comment
-# must start with a *. Like so:
-#
-# ```c
-# /**
-#  * Markdown here...
-#  */
-# ```
-#
-# Alternatively, three slashes can also be used: `/// Markdown here`
-#
-# ## Configuration Options
-#
-# You can set these in the BEGIN block below, or pass them to the script through the
-# `-v` command-line option:
-#
-# - `-vTitle="My Document Title"` to set the `<title/>` in the `<head/>` section of the HTML
-# - `-vStyleSheet=style.css` to use a separate CSS file as style sheet.
-# - `-vTheme=n` with n either 0 to disable CSS or 1 to enable; Default = 1
-# - `-vTopLinks=1` to have links to the top of the doc next to headers.
-# - `-vMaxWidth=1080px` specifies the Maximum width of the HTML output.
-# - `-vPretty=1` enable Syntax highlighting with Google's code prettify
-#        https://github.com/google/code-prettify
-# - `-vHideToCLevel=n` specifies the level of the ToC that should be collapsed by default.
-# - `-vclassic_underscore=1` words_with_underscores behave like old markdown where the
-#        underscores in the word counts as emphasis. The default behaviour is to have
-#        `words_like_this` not contain any emphasis.
-#
-# I've tested it with Gawk, Nawk and Mawk.
-# Gawk and Nawk worked without issues, but don't use the `-W compat`
-# or `-W traditional` settings with Gawk.
-# Mawk v1.3.4 worked correctly but v1.3.3 choked on it.
-#
-# ## Extensions
-#
-# - A link like `\[link text][heading-name]` gets replaced with `<a href="#heading-name">link text</a>`
-#   where heading-name corresponds to one of the headings.
-# - Insert a Table of Contents by using `\![toc]`.
-#   The Table of Contents is collapsed by default:
-#   - Use `\\![toc+]` to insert a ToC that is expanded by default;
-#   - Use `\\![toc-]` for a collapsed ToC.
-# - Github-style ```` ``` ```` code blocks supported.
-# - Github-style `~~strikethrough~~` supported.
-# - GitHub-style task lists `- [x]` are supported for documenting bugs and todo lists in code.
-# - A couple of ideas from MultiMarkdown:
-#    - `\\[^footnotes]` are supported.
-#    - `*[abbr]:` Abbreviations are supported.
-#    - Space followed by \\ at the end of a line also forces a line break.
-# - Default behaviour is to have words_like_this not contain emphasis.
-# Limitations:
-# - You can't nest `<blockquote>`s, and they can't contain nested lists
-#     or `pre` blocks. You can work around this by using HTML directly.
-# - It takes some liberties with how inline (particularly block-level) HTML is processed and not
-#     all HTML tags supported. HTML forms and `<script/>` tags are out.
-# - Paragraphs in lists differ a bit from other markdowns. Use indented blank lines to get
-#    to insert `<br>` tags to emulate paragraphs. Blank lines stop the list by inserting the
-#    `</ul>` or `</ol>` tags.
-#
-# ## References
-#
-# - <https://tools.ietf.org/html/rfc7764>
-# - <http://daringfireball.net/projects/markdown/syntax>
-# - <https://guides.github.com/features/mastering-markdown/>
-# - <http://fletcher.github.io/MultiMarkdown-4/syntax>
-# - <http://spec.commonmark.org>
-#
-# ## License
 #
 #     (c) 2016 Werner Stoop
 #     Copying and distribution of this file, with or without modification,
@@ -100,49 +34,7 @@ BEGIN {
     srand();
 }
 
-!Clean && !Multi && /\/\*\*/    {
-    Mode = "p";
-    sub(/^.*\/\*\*/,"");
-    if(match($0,/\*\//)) {
-        sub(/\*\/.*/,"");
-        Out = Out filter($0);
-        Out = Out tag(Mode, Buf);
-        Buf = "";
-        Prev = "";
-    } else {
-        Out = Out filter($0);
-        Multi = 1;
-    }
-}
-
-Multi && /\*\// {
-    gsub(/\*\/.*$/,"");
-    if(match($0, /^[[:space:]]*\*/))
-        Out = Out filter(substr($0, RSTART+RLENGTH));
-    if(Mode == "ul" || Mode == "ol") {
-        while(ListLevel > 1)
-            Buf = Buf "\n</" Open[ListLevel--] ">";
-        Out = Out tag(Mode, Buf "\n");
-    } else {
-        Buf = trim(scrub(Buf));
-        if(Buf)
-            Out = Out tag(Mode, Buf);
-    }
-    Mode = "none";
-    Multi = 0;
-    Buf = "";
-    Prev = "";
-}
-Multi {
-    gsub(/\r/, "", $0);
-    if(match($0,/[[:graph:]]/) && substr($0,RSTART,1)!="*")
-        next;
-    gsub(/^[[:space:]]*\*/, "", $0);
-}
-Multi { Out = Out filter($0); }
-
-# These are the rules for `///` single-line comments:
-Single && $0 !~ /\/\/\// {
+Single && $0 !~ /^#/ {
     if(Mode == "ul" || Mode == "ol") {
         while(ListLevel > 1)
             Buf = Buf "\n</" Open[ListLevel--] ">";
@@ -157,18 +49,14 @@ Single && $0 !~ /\/\/\// {
     Buf = "";
     Prev = "";
 }
-Single && /\/\/\// {
-    sub(/.*\/\/\//,"");
+Single && /^#+/ {
+    sub(/^#+/,"");
     Out = Out filter($0);
 }
-!Clean && !Single && !Multi && /\/\/\// {
-    sub(/.*\/\/\//,"");
+!Single && /^##+/ {
+    sub(/^##+/,"");
     Single = 1;
     Mode = "p";
-    Out = Out filter($0);
-}
-
-Clean {
     Out = Out filter($0);
 }
 
@@ -190,8 +78,8 @@ END {
 
     print "<!DOCTYPE html>\n<html><head>"
     print "<title>" Title "</title>";
-    if(StyleSheet)
-        print "<link rel=\"stylesheet\" href=\"" StyleSheet "\">";
+    if(stylesheet)
+        print "<link rel=\"stylesheet\" href=\"" stylesheet "\">";
     else
         print "<style><!--" CSS "\n--></style>";
     print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
@@ -199,7 +87,7 @@ END {
         print "<script type=\"text/javascript\"><!--\n" \
             "function toggle_toc(n) {\n" \
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
-            "    var btn=document.getElementById('btn-text');\n" \
+            "    var btn=document.getElementById('btn-text-' + n);\n" \
             "    toc.style.display=(toc.style.display=='none')?'block':'none';\n" \
             "    btn.innerHTML=(toc.style.display=='none')?'&#x25BC;':'&#x25B2;';\n" \
             "}\n" \
@@ -248,7 +136,7 @@ function trim(st) {
 function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
     if(Mode == "p") {
         if(match(st, /^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/)) {
-            linkdesc = ""; lastlink = 0;
+            linkdesc = ""; LastLink = 0;
             match(st,/\[.*\]/);
             LinkRef = tolower(substr(st, RSTART+1, RLENGTH-2));
             st = substr(st, RSTART+RLENGTH+2);
@@ -264,17 +152,17 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
                     linkdesc = substr(st, RSTART+1, RLENGTH-2);
             }
             LinkUrls[LinkRef] = escape(url);
-            if(!linkdesc) lastlink = 1;
+            if(!linkdesc) LastLink = 1;
             LinkDescs[LinkRef] = escape(linkdesc);
             return;
-        } else if(lastlink && match(st, /^[[:space:]]*["'(]/)) {
+        } else if(LastLink && match(st, /^[[:space:]]*["'(]/)) {
             match(st, /["'(]/);
             delim = substr(st, RSTART, 1);
             edelim = (delim == "(") ? ")" : delim;
             st = substr(st, RSTART);
             if(match(st, delim ".*" edelim))
                 LinkDescs[LinkRef] = escape(substr(st,RSTART+1,RLENGTH-2));
-            lastlink = 0;
+            LastLink = 0;
             return;
         } else if(match(st, /^[[:space:]]*\[\^[-._[:alnum:][:space:]]+\]:[[:space:]]*/)) {
             match(st, /\[\^[[:alnum:]]+\]:/);
@@ -336,7 +224,7 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
             }
         } else
             Buf = Buf st "\n";
-        lastlink = 0;
+        LastLink = 0;
     } else if(Mode == "blockquote") {
         if(match(st, /^[[:space:]]*>[[:space:]]*$/))
             Buf = Buf "\n</p><p>";
@@ -574,15 +462,19 @@ function make_toc(st,              r,p,dis,t,n) {
         ToC = ToC "</ul>";
     p = match(st, /!\[toc[-+]?\]/);
     while(p) {
+        if(substr(st,RSTART-1,1) == "\\") {
+            r = r substr(st,1,RSTART-2) substr(st,RSTART,RLENGTH);
+            st = substr(st,RSTART+RLENGTH);
+            p = match(st, /!\[toc[-+]?\]/);
+            continue;
+        }
+
         ++n;
         dis = index(substr(st,RSTART,RLENGTH),"+");
-        t = "<div>\n<a class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text\">" (dis?"&#x25B2;":"&#x25BC;") "</span>&nbsp;Contents</a>\n" \
+        t = "<div>\n<a id=\"toc-button-" n "\" class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text-" n "\">" (dis?"&#x25B2;":"&#x25BC;") "</span>&nbsp;Contents</a>\n" \
             "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc-1\">" ToC "</ul>\n</div>\n</div>";
         r = r substr(st,1,RSTART-1);
-        if(substr(st,RSTART-1,1) != "\\")
-            r = r t;
-        else
-            r = substr(r,1,length(r)-1) substr(st,RSTART,RLENGTH);
+        r = r t;
         st = substr(st,RSTART+RLENGTH);
         p = match(st, /!\[toc[-+]?\]/);
     }
@@ -651,6 +543,12 @@ function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
 function fix_footnotes(st,         r,p,n,i,d,fn,fc) {
     p = match(st, /\[\^[^\]]+\]/);
     while(p) {
+        if(substr(st,RSTART-2,1) == "\\") {
+            r = r substr(st,1,RSTART-3) substr(st,RSTART,RLENGTH);
+            st = substr(st,RSTART+RLENGTH);
+            p = match(st, /\[\^[^\]]+\]/);
+            continue;
+        }
         r = r substr(st,1,RSTART-1);
         d = substr(st,RSTART+2,RLENGTH-3);
         n = tolower(d);
