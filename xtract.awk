@@ -9,12 +9,34 @@
 # notice and this notice are preserved. This file is offered as-is,
 # without any warranty.
 
-!in_comment && /\/\*\*/ {
-	in_comment = 1;
-	sub(/\/\*\*/,"");
+!Multi && /\/\*\*/ {
+	Multi = 1;
+	sub(/^.*\/\*\*/,"");
 }
-in_comment && /\*\// { in_comment = 0; }
-in_comment && /^[[:space:]]*\*/ {	
+Multi && /\*\// {
+    sub(/[[:space:]]*\*\/.*/,"");
+    if($0) {
+	sub(/^[[:space:]]*\*/,"");
+        print $0 "\n";
+    } else print "";
+    Multi = 0;
+}
+Multi && /^[[:space:]]*\*/ {
 	sub(/^[[:space:]]*\*/,"");
 }
-in_comment { print; }
+Multi { print; }
+
+# For `///` single-line comments:
+Single && $0 !~ /\/\/\// {
+    Single=0;
+    print "\n";
+}
+Single && /\/\/\// {
+    sub(/^.*\/\/\//,"");
+    print $0;
+}
+!Single && /\/\/\// {
+    sub(/^.*\/\/\//,"");
+    print $0;
+    Single=1;
+}

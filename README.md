@@ -182,7 +182,7 @@ Things I'd like to add in the future:
   - ~~The problem is that things like lists might not carry over between blocks?~~
   - *Implemented*, but the functionality is limited to inline elements only.
 - `xtract.awk` is missing a couple of features:
-  - [ ] `///` comments are not extracted.
+  - [x] `///` comments are not extracted.
     - They are a bit of a minefield because they don't support block-level markdown.
-  - [ ] `/** Single line comments like this */` aren't extracted.
+  - [x] `/** Single line comments like this */` aren't extracted.
 
