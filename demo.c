@@ -1,6 +1,6 @@
 /**
- * `comdown.awk` Demonstration
- * ===========================
+ * `d.awk` Demonstration
+ * =====================
  * ![toc]
  *
  * This file demonstrates how to comment your code with
@@ -105,10 +105,10 @@
  *
  * ### Code Blocks
  * Code indented with tabs:
- *	//Some code, indented with a single tab:
- *	int main(int argc, char *argv[]) {
- *		return 0;
- *	}
+ *  //Some code, indented with a single tab:
+ *  int main(int argc, char *argv[]) {
+ *      return 0;
+ *  }
  *
  * Code indented with spaces:
  *    //Some code, indented with spaces
@@ -361,15 +361,28 @@
 
 /** Comments on lines by themselves are treated as separate paragraphs. */
 
-/// Three slashes syntax can be used, but it doesn't block-level elements like lists and so on.
+/// Three slashes syntax can be used.  \
+/// Code Block:
+///
+///     int main(int argc, char *argv[])
+///
+/// - Item 1
+/// - Item 2
+///   - Item 2a
+///   - Item 2b
+/// - Item 3
 
 /* This comment is not processed because it doesn't start with the ** */
 
 //Some text that should not be converted.
 int main(int argc, char *argv[]) {
-	/** You can put comments throughout your code. */
+    /** You can put comments
+     * throughout your code.
+     */
 
-	printf("hello, world");
+    printf("hello, world"); /** A comment at the end of a line. */
 
-    return 0;
+    return 0; /** spans
+               *  multiple
+               *  lines */
 }

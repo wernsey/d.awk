@@ -81,12 +81,22 @@ BEGIN {
     srand();
 }
 
-Mode == "none" && /\/\*\*/    {
+!Multi && /\/\*\*/    {
     Mode = "p";
-    gsub(/\/\*/,"");
+    sub(/^.*\/\*\*/,"");
+    if(match($0,/\*\//)) {
+        sub(/\*\/.*/,"");
+        Out = Out filter($0);
+        Out = Out tag(Mode, Buf);
+        Buf = "";
+        Prev = "";
+    } else {
+        Out = Out filter($0);
+        Multi = 1;
+    }
 }
 
-Mode != "none" && /\*\//      {
+Multi && /\*\// {
     gsub(/\*\/.*$/,"");
     if(match($0, /^[[:space:]]*\*/))
         Out = Out filter(substr($0, RSTART+RLENGTH));
@@ -100,17 +110,19 @@ Mode != "none" && /\*\//      {
             Out = Out tag(Mode, Buf);
     }
     Mode = "none";
+    Multi = 0;
     Buf = "";
     Prev = "";
 }
-Mode != "none" {
+Multi {
     gsub(/\r/, "", $0);
     if(match($0,/[[:graph:]]/) && substr($0,RSTART,1)!="*")
         next;
     gsub(/^[[:space:]]*\*/, "", $0);
 }
 
-/^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/ {
+# Shouldn't these be moved into `filter()`??
+Mode == "p" && /^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/ {
     linkdesc = ""; lastlink = 0;
     match($0,/\[.*\]/);
     LinkRef = tolower(substr($0, RSTART+1, RLENGTH-2));
@@ -132,7 +144,7 @@ Mode != "none" {
     next;
 }
 
-Mode != "none" && lastlink && /^[[:space:]]*["'(]/ {
+Mode == "p" && lastlink && /^[[:space:]]*["'(]/ {
     match($0, /["'(]/);
     delim = substr($0, RSTART, 1);
     edelim = (delim == "(") ? ")" : delim;
@@ -158,22 +170,24 @@ Mode == "p" && /^[[:space:]]*\*\[[[:alnum:]]+\]:[[:space:]]*/ {
     next;
 }
 
-Mode != "none" { Out = Out filter($0); }
+Multi { Out = Out filter($0); }
 
 # These are the rules for `///` single-line comments:
 Single && $0 !~ /\/\/\// {
+    Out = Out tag(Mode, Buf);
     Single=0;
     Buf = "";
     Prev = "";
 }
 Single && /\/\/\// {
     sub(/.*\/\/\//,"");
-    Out = Out itag("p", scrub($0)) "\n";
+    Out = Out filter($0);
 }
-!Single && Mode == "none" && /\/\/\// {
+!Single && !Multi && /\/\/\// {
     sub(/.*\/\/\//,"");
     Single=1;
-    Out = Out itag("p", scrub($0)) "\n";
+    Mode == "p";
+    Out = Out filter($0);
 }
 
 END {
