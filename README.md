@@ -165,9 +165,11 @@ script.
 Like `d.awk`, but generates documentation for programming languages that uses
 `#` symbols for comments.
 
-For example, to generate an HTML file from the comments at the top of ``
-```
-./hashd.awk d.awk > demo.html
+For example, to generate an HTML file from the comments at the top of the
+[d.awk][] script use the this command:
+
+```sh
+./hashd.awk d.awk > d.awk.html
 ```
 
 The first comment must start with two `#` symbols. The following is an example
