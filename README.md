@@ -140,12 +140,20 @@ like so:
 ./d.awk demo.c > doc.html
 ```
 
+Or to use it in _clean_ mode, which treats the input file as a normal Markdown
+file:
+
+```sh
+./d.awk -v Clean=1 README.md > doc.html
+```
+
 The file `demo.c` in the distribution provides a demonstration of all the
 features and the supported syntax.
 
 Configuration options can be set in the `BEGIN` block of the script, or passed
 to the script through Awk's `-v` command-line option:
 - `-v Title="My Document Title"` to set the `<title/>` of the HTML
+- `-v Clean=1` to treat the input file as a normal Markdown file.
 - `-v StyleSheet=style.css` to use a separate file as style sheet.
 - `-v TopLinks=1` to have links to the top of the document next to headers.
 - `-v Pretty=1` enable Syntax highlighting with Google's [code-prettify][]
@@ -256,9 +264,8 @@ details), but the individual files may be redistributed with this notice:
 
 Things I'd like to add in the future:
 
-- [x] The `mdown.awk` script doesn't always like lists at the end of a file.
-  - The last item in the list gets duplicated.
-  - You can work around this issue by adding a line with a space in it at the
-    end of the file.
-  - The other scripts don't have this problem.
 - `wrap.awk` adds too much whitespace to code blocks...
+- [ ] It is a known to not work with versions of **mawk** prior to 1.3.4 
+    (The default Awk on Raspian as of this writing is version 1.3.3).
+    Please use Gawk instead.
+
