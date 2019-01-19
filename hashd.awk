@@ -402,7 +402,7 @@ function scrub(st,    mp, ms, me, r, p, tg, a) {
             } else
                 a = "";
 
-            if(match(tolower(tg), "^/?(a|abbr|div|span|blockquote|pre|img|code|p|em|strong|sup|sub|del|ins|s|u|b|i|br|hr|ul|ol|li|table|thead|tfoot|tbody|tr|th|td|caption|column|col|colgroup|figure|figcaption|dl|dd|dt|mark|cite|q|var|samp|small)$")) {
+            if(match(tolower(tg), "^/?(a|abbr|div|span|blockquote|pre|img|code|p|em|strong|sup|sub|del|ins|s|u|b|i|br|hr|ul|ol|li|table|thead|tfoot|tbody|tr|th|td|caption|column|col|colgroup|figure|figcaption|dl|dd|dt|mark|cite|q|var|samp|small|details|summary)$")) {
                 r = r "<" tg a ">";
             } else if(match(tg, "^[[:alpha:]]+://[[:graph:]]+$")) {
                 if(!a) a = tg;
@@ -614,10 +614,10 @@ function obfuscate(e,     r,i,t,o) {
     }
     return o;
 }
-function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff,i) {
+function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff,fs,i) {
     if(Theme == "0") return "";
 
-    css["body"] = "color:%color1%;font-family:%font-family%;line-height:1.5em;" \
+    css["body"] = "color:%color1%;font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
                 "padding:1em 2em;width:80%;max-width:%maxwidth%;margin:0 auto;min-height:100%;float:none;";
     css["h1"] = "color:%color1%;border-bottom:1px solid %color1%;padding:0.3em 0.1em;";
     css["h2"] = "color:%color2%;border-bottom:1px solid %color2%;padding:0.2em 0.1em;";
@@ -634,8 +634,8 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;";
     css["strong,b"] = "color:%color1%";
     css["code"] = "color:%color2%;";
-    css["blockquote"] = "margin-left:1em;color:%color2%;border-left:0.2em solid %color3%;padding:0.25em 0.5em;";
-    css["pre"] = "color:%color2%;background:%color5%;border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;";
+    css["blockquote"] = "margin-left:1em;color:%color2%;border-left:0.2em solid %color3%;padding:0.25em 0.5em;overflow-x:auto;";
+    css["pre"] = "color:%color2%;background:%color5%;border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
     css["table"] = "border-collapse:collapse;margin:0.5em;";
     css["th,td"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
     css["th"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
@@ -656,11 +656,13 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["a.footnote-back"] = "text-decoration:initial;font-size:x-small;";
     css[".fade"] = "color:%color5%;";
     css[".highlight"] = "color:%color2%;background-color:%color5%;";
+	css["summary"] = "cursor:pointer;";
 
     # Colors:
     c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
     # Font Family:
     ff = "sans-serif";
+    fs = "11pt";
 
     # Alternative color scheme suggestions:
     #c1="#303F9F";c2="#0449CC";c3="#2162FA";c4="#4B80FB";c5="#EDF2FF";
@@ -681,6 +683,7 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     gsub(/%color4%/,c4,ss);
     gsub(/%color5%/,c5,ss);
     gsub(/%font-family%/,ff,ss);
+    gsub(/%font-size%/,fs,ss);
     gsub(/%hr%/,hr,ss);
     return ss;
 }
