@@ -313,6 +313,11 @@
  * </code></pre>
  * </blockquote>
  *
+ * <details>
+ * <summary>Details Tag</summary>
+ * The &lt;details/&gt; and &lt;summary/&gt; tags are also supported
+ * </details>
+ *
  * Lorem Ipsum
  * -----------
  *
@@ -360,8 +365,8 @@
  *
  * ------
  */
- 
-/** Comments on lines by themselves are treated as separate paragraphs. */
+
+/** **Comments** on `lines` by _themselves_ are treated as separate paragraphs. FIXME: This doesn't work... */
 
 /// Three slashes syntax can be used.  \
 /// Code Block:
