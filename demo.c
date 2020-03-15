@@ -366,7 +366,7 @@
  * ------
  */
 
-/** **Comments** on `lines` by _themselves_ are treated as separate paragraphs. FIXME: This doesn't work... */
+/** **Comments** on `lines` by _themselves_ are treated as separate paragraphs. */
 
 /// Three slashes syntax can be used.  \
 /// Code Block:

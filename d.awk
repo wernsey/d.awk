@@ -106,7 +106,7 @@ BEGIN {
     if(match($0,/\*\//)) {
         sub(/\*\/.*/,"");
         Out = Out filter($0);
-        Out = Out tag(Mode, Buf);
+        Out = Out tag(Mode, scrub(Buf));
         Buf = "";
         Prev = "";
     } else {
