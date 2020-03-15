@@ -201,14 +201,14 @@ END {
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
             "    var btn=document.getElementById('btn-text-' + n);\n" \
             "    toc.style.display=(toc.style.display=='none')?'block':'none';\n" \
-            "    btn.innerHTML=(toc.style.display=='none')?'&#x25BC;':'&#x25B2;';\n" \
+            "    btn.innerHTML=(toc.style.display=='none')?'&#x25BA;':'&#x25BC;';\n" \
             "}\n" \
             "function toggle_toc_ul(n) {   \n" \
             "    var toc=document.getElementById('toc-ul-' + n);   \n" \
             "    var btn=document.getElementById('toc-btn-' + n);   \n" \
             "    if(toc) {\n" \
             "        toc.style.display=(toc.style.display=='none')?'block':'none';   \n" \
-            "        btn.innerHTML=(toc.style.display=='none')?'&#x25BC;':'&#x25B2;';\n" \
+            "        btn.innerHTML=(toc.style.display=='none')?'&#x25BA;':'&#x25BC;';\n" \
             "    }\n" \
             "}\n" \
             "//-->\n</script>";
@@ -555,11 +555,11 @@ function heading(level, st,       res, href) {
     for(;ToCLevel < level; ToCLevel++) {
         ToC_ID++;
         if(ToCLevel < HideToCLevel) {
-            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25B2;</a>";
-            ToC = ToC "<ul class=\"toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
-        } else {
             ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BC;</a>";
-            ToC = ToC "<ul style=\"display:none;\" class=\"toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
+            ToC = ToC "<ul class=\"toc toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
+        } else {
+            ToC = ToC "<a class=\"toc toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BA;</a>";
+            ToC = ToC "<ul style=\"display:none;\" class=\"toc toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
         }
     }
     for(;ToCLevel > level; ToCLevel--)
@@ -583,8 +583,8 @@ function make_toc(st,              r,p,dis,t,n) {
 
         ++n;
         dis = index(substr(st,RSTART,RLENGTH),"+");
-        t = "<div>\n<a id=\"toc-button-" n "\" class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text-" n "\">" (dis?"&#x25B2;":"&#x25BC;") "</span>&nbsp;Contents</a>\n" \
-            "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc-1\">" ToC "</ul>\n</div>\n</div>";
+        t = "<div>\n<a id=\"toc-button-" n "\" class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text-" n "\">" (dis?"&#x25BC;":"&#x25BA;") "</span>&nbsp;Contents</a>\n" \
+            "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc toc-1\">" ToC "</ul>\n</div>\n</div>";
         r = r substr(st,1,RSTART-1);
         r = r t;
         st = substr(st,RSTART+RLENGTH);
@@ -769,6 +769,7 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css[".fade"] = "color:%color5%;";
     css[".highlight"] = "color:%color2%;background-color:%color5%;";
 	css["summary"] = "cursor:pointer;";
+	css["ul.toc"] = "list-style-type:none;";
 
     # Colors:
     c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";

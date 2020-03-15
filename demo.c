@@ -33,6 +33,7 @@
  * ```
  * # Heading 1
  * ## Heading 2
+ * There's a missing level 3 heading here on purpose for a regression test
  * #### Stray level 4
  * ### Heading 3
  * #### Heading 4
