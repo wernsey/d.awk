@@ -1,10 +1,11 @@
 /**
  * `d.awk` Demonstration
  * =====================
+ *
  * ![toc]
  *
  * This file demonstrates how to comment your code with
- * the `comdown.awk` script. It also serves as a functional test.
+ * the `d.awk` script. It also serves as a functional test.
  *
  * The Table of Contents above was inserted with `\![toc]`:
  *
@@ -31,6 +32,7 @@
  * ## Heading 2
  * ### Heading 3
  * ```
+ *
  * # Heading 1
  * ## Heading 2
  * There's a missing level 3 heading here on purpose for a regression test
@@ -53,19 +55,23 @@
  *
  * Block Level Formatting
  * ----------------------
+ *
  * These options are available at the block level.
+ *
  * ### Lists
+ *
  * #### Ordered List ####
+ *
  *  1. Item 1
  *       1. Item 1.1
  *          1981\. This line started with a number.
  *       1. Item 1.2;
- *          This item consists of multiple lines  
+ *          This item consists of multiple lines
  *          with a forced line break (two spaces at the end of the last line).
  *  1. Item 2
  *         * Item 2.1; List styles can be mixed.
  *         * Item 2.2
- *      
+ *
  *           The blank line above contains whitespace, hence a new list is not started
  *           (Paragraphs in lists differ a bit from other markdowns).
  *         * Item 2.3
@@ -75,6 +81,7 @@
  *        1. Item 3.2
  *
  * #### Unordered List
+ *
  *  - Item 1
  *     + Item 1.1
  *     + Item 1.2
@@ -86,6 +93,7 @@
  *      * Item 3.2
  *
  * GitHub-style task lists are also supported:
+ *
  *   - [ ] Task 1
  *     - [ ] Subtask 1a
  *     - [X] Subtask 1b
@@ -115,7 +123,7 @@
  *
  * Code indented with spaces:
  *    //Some code, indented with spaces
- *    
+ *
  *    int main(int argc, char *argv[]) {
  *        return 0;
  *    }
@@ -135,7 +143,7 @@
  * Google's [code prettifier](https://github.com/google/code-prettify). The example
  * below specifies ```` ```java ```` to syntax highlight a block of Java code.
  * You have to specify `-vPretty=1` on the command line for the functionality to work.
- * 
+ *
  * ```java
  * // Some sample Java code
  * class Hello {
@@ -153,7 +161,7 @@
  *
  *    # Compile like so:
  *    mvn package
- *    
+ *
  *    # Generate Javadocs
  *    mvn javadoc:javadoc
  *
@@ -176,6 +184,7 @@
  *
  * Hyperlinks
  * ----------
+ *
  * * Example hyperlink 1: [This link](http://example.com) is inline
  * * Example hyperlink 1B: [This link][link1] is not inline; escape charaters in the url.
  * * Example hyperlink 2: [This link] [link2] and [this one][LINK2] (case insensitive) has a title attribute.
@@ -187,10 +196,10 @@
  *   escaped characters in the link description.
  * * Links can be placed inline: <http://www.example.com>.
  * * e-mail addresses get obfuscated: <address@example.com>
- * * Relative links that refer to specific headings are supported.
- *   For example [Block Level Formatting][block-level-formatting] - replace spaces with -, remove all
- *   other non-alphanumerics and everything lowercase.  
- *   Alternatively [Block Level Formatting][Block Level Formatting] or [ Using HTML in Documents ][]
+ * * Relative links that refer to specific headings are supported; Replace spaces with hyphens `-`, remove all
+ *   other non-alphanumerics and everything lowercase.
+ *   * For example `[Block Level Formatting](#block-level-formatting)` yields [Block Level Formatting](#block-level-formatting)
+ * * `[Broken links][nowhere]` end up verbatim: [Broken links][nowhere]
  * * [This link](http://example.com/some_random_page) has \_underscores\_ where
  *   the usual rules about escaping apply, but [this one][underscores] doesn't.
  *
@@ -206,10 +215,10 @@
  * Images
  * ------
  *
- * Image syntax `\![Image Alt Text](example.png)`  
+ * Image syntax `\![Image Alt Text](example.png)`
  * Escaping images `\![Image Alt Text](example.png)` and links `\[Link Alt Text](example.com)`
  *
- * Images can be encoded as Data URIs: ![Red Dot][reddot]  
+ * Images can be encoded as Data URIs: ![Red Dot][reddot]
  * <sub>The red dot comes from [Wikipedia][datauri]</sub>
  *
  * [dataURI]: https://en.wikipedia.org/wiki/Data_URI_scheme "Data URI scheme"
@@ -217,6 +226,7 @@
  *
  * Line-Level Formatting
  * ----------------------
+ *
  * * \_Emphasized\_ produces _Emphasized_
  *   * A word *containing_nested_underscores* can be treated in one of two ways depending on
  *     whether the variable `classic_underscore` is in the script.
@@ -229,7 +239,7 @@
  * * \`\`Code Block with embedded backtick: \` \`\` produces ``Code Block with embedded backtick: ` ``
  * * \~~Strike through\~~ produces ~~Strike through~~
  * * _You **can** mix styles within `other` styles_
- * * But the backtick code blocks cause asterisks and underscores to be ignored:  
+ * * But the backtick code blocks cause asterisks and underscores to be ignored:
  *   `void do_something(Widget *foo, int p, int q, Wotzit *bar, int zoop)`
  * * Whitespace surrounding the * or _ will cause it to be treated as literal:
  *   * _ this text would not be emphasized _ and neither would this * mmmm *
@@ -237,6 +247,7 @@
  *
  * Extensions
  * ----------
+ *
  * The special tag `\![toc]` can be used to insert a table of contents in the document.
  * Leave a blank line below it to ensure the paragraphs are formatted correctly.
  *
@@ -268,7 +279,9 @@
  *
  * Using HTML in Documents
  * -----------------------
+ *
  * ### A HTML Table
+ *
  * <table>
  * <tr><th>Column A</th><th>Column B</th><th>Column C</th></tr>
  * <tr><td>Item 1a</td><td>Item 1b</td><td>Item 1c</td></tr>
@@ -280,6 +293,7 @@
  * </table>
  *
  * ### A Definitions List
+ *
  * <dl>
  * <dt>Item 1</dt>
  * <dd>A description of item 1.</dd>
@@ -290,6 +304,7 @@
  * </dl>
  *
  * ### Some Other Tags
+ *
  * Some <b>bold text</b>, some <i>italic text</i>, a <q>quote</q>,
  * a <var class="xxx">variable</var>, <ins>inserted text</ins>, <del>deleted text</del>,
  * a <mark>marked block</mark>, a <cite>[citation]</cite>.
@@ -300,7 +315,7 @@
  * A `<span/>` element:
  * <span class="highlight">A `<span/>` element</span>
  *
- * Not all HTML tags are supported. For example:  
+ * Not all HTML tags are supported. For example:
  * <script type="text/javascript">$(function(){alert("GOTCHA!");});</script>
  *
  * This is how you work around the limitations of block quotes:

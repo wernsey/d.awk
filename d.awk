@@ -42,8 +42,6 @@
 #
 # ## Extensions
 #
-# - A link like `\[link text][heading-name]` gets replaced with `<a href="#heading-name">link text</a>`
-#   where heading-name corresponds to one of the headings.
 # - Insert a Table of Contents by using `\![toc]`.
 #   The Table of Contents is collapsed by default:
 #   - Use `\\![toc+]` to insert a ToC that is expanded by default;
@@ -51,12 +49,20 @@
 # - Github-style ```` ``` ```` code blocks supported.
 # - Github-style `~~strikethrough~~` supported.
 # - GitHub-style task lists `- [x]` are supported for documenting bugs and todo lists in code.
+# - The `id` attribute of anchor tags `<a>` are treated as in GitHub:
+#   The tag's id should be the title, in lower case stripped of non-alphanumeric characters
+#   (except hyphens and spaces) and then with all spaces replaced with hyphens.
+#   then add -1, -2, -3 until it's unique
+#   See [here](https://gist.github.com/asabaylus/3071099) (especially the comment by TomOnTime)
+#   and [here](https://gist.github.com/rachelhyman/b1f109155c9dafffe618)
 # - A couple of ideas from MultiMarkdown:
 #    - `\\[^footnotes]` are supported.
 #    - `*[abbr]:` Abbreviations are supported.
 #    - Space followed by \\ at the end of a line also forces a line break.
 # - Default behaviour is to have words_like_this not contain emphasis.
+#
 # Limitations:
+#
 # - You can't nest `<blockquote>`s, and they can't contain nested lists
 #     or `pre` blocks. You can work around this by using HTML directly.
 # - It takes some liberties with how inline (particularly block-level) HTML is processed and not
@@ -542,16 +548,23 @@ function scrub(st,    mp, ms, me, r, p, tg, a) {
 
 function push(newmode) {Stack[StackTop++] = Mode; Mode = newmode;}
 function pop() {Mode = Stack[--StackTop];Buf = ""; return Mode;}
-function heading(level, st,       res, href) {
-    st = trim(st);
+function heading(level, st,       res, href, u, text,svg) {
     if(level > 6) level = 6;
+    st = trim(st);
     href = tolower(st);
     href = strip_tags(href);
-    gsub(/[^ [:alnum:]]+/, "", href);
-    gsub(/ +/, "-", href);
-    if(!LinkUrls[href]) LinkUrls[href] = "#" href;
-    if(!LinkUrls[tolower(st)]) LinkUrls[tolower(st)] = "#" href;
-    res = tag("h" level, st (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":""), "id=\"" href "\"");
+    gsub(/[^-_ [:alnum:]]+/, "", href);
+    gsub(/[[:space:]]/, "-", href);
+    if(LinkUrls[href]) {
+        for(u = 1; LinkUrls[href "-" u]; u++);
+        href = href "-" u;
+    }
+    # LinkUrls[href] = "#" href;
+
+    svg = "<svg width=\"16\" height=\"16\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-30, 8, 8)\" stroke=\"#000000\" opacity=\"0.25\"><rect fill=\"none\" height=\"6\" width=\"8\" x=\"2\" y=\"6\" rx=\"1.5\"/><rect fill=\"none\" height=\"6\" width=\"8\" x=\"6\" y=\"4\" rx=\"1.5\"/></g></svg>";
+    text = "<a href=\"#" href "\" class=\"header\">" svg "&nbsp;" st "</a>" (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":"");
+
+    res = tag("h" level, text, "id=\"" href "\"");
     for(;ToCLevel < level; ToCLevel++) {
         ToC_ID++;
         if(ToCLevel < HideToCLevel) {
@@ -594,13 +607,13 @@ function make_toc(st,              r,p,dis,t,n) {
 }
 function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
     do {
-        pre = match(st, /<pre>/); # Don't substitute in <pre> blocks
+        pre = match(st, /<(pre|code)>/); # Don't substitute in <pre> or <code> blocks
         pos = match(st, /\[[^\]]+\]/);
         if(!pos)break;
         if(pre && pre < pos) {
-            pre = match(st, /<\/pre>/);
+            match(st, /<\/(pre|code)>/);
             res = res substr(st,1,RSTART+RLENGTH);
-            st = substr(st, RSTART+RLENGTH);
+            st = substr(st, RSTART+RLENGTH+1);
             continue;
         }
         img=substr(st,RSTART-1,1)=="!";
@@ -645,8 +658,10 @@ function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
             ld = LinkDescs[lr];
             if(img)
                 res = res "<img src=\"" url "\" title=\"" ld "\" alt=\"" lt "\">";
-            else
+            else if(url)
                 res = res "<a href=\"" url "\" title=\"" ld "\">" lt "</a>";
+            else
+                res = res "[" lt "][" lr "]";
         } else
             res = res (img?"!":"") rx;
     } while(pos > 0);
@@ -744,6 +759,9 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["a:active"] = "color:%color4%;";
     css["a:hover"] = "color:%color4%;";
     css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;";
+    css["a.header svg"] = "opacity:0;";
+    css["a.header:hover svg"] = "opacity:1;";
+    css["a.header"] = "text-decoration: none;";
     css["strong,b"] = "color:%color1%";
     css["code"] = "color:%color2%;";
     css["blockquote"] = "margin-left:1em;color:%color2%;border-left:0.2em solid %color3%;padding:0.25em 0.5em;overflow-x:auto;";
