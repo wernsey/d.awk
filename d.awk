@@ -524,10 +524,10 @@ function scrub(st,    mp, ms, me, r, p, tg, a) {
                 r = r "<" tg a ">";
             } else if(match(tg, "^[[:alpha:]]+://[[:graph:]]+$")) {
                 if(!a) a = tg;
-                r = r "<a href=\"" tg "\">" a "</a>";
+                r = r "<a class=\"normal\" href=\"" tg "\">" a "</a>";
             } else if(match(tg, "^[[:graph:]]+@[[:graph:]]+$")) {
                 if(!a) a = tg;
-                r = r "<a href=\"" obfuscate("mailto:" tg) "\">" obfuscate(a) "</a>";
+                r = r "<a class=\"normal\" href=\"" obfuscate("mailto:" tg) "\">" obfuscate(a) "</a>";
             } else {
                 r = r "&lt;";
                 continue;
@@ -562,7 +562,7 @@ function heading(level, st,       res, href, u, text,svg) {
     # LinkUrls[href] = "#" href;
 
     svg = "<svg width=\"16\" height=\"16\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-30, 8, 8)\" stroke=\"#000000\" opacity=\"0.25\"><rect fill=\"none\" height=\"6\" width=\"8\" x=\"2\" y=\"6\" rx=\"1.5\"/><rect fill=\"none\" height=\"6\" width=\"8\" x=\"6\" y=\"4\" rx=\"1.5\"/></g></svg>";
-    text = "<a href=\"#" href "\" class=\"header\">" svg "&nbsp;" st "</a>" (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":"");
+    text = "<a href=\"#" href "\" class=\"header\">" st "&nbsp;" svg "</a>" (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":"");
 
     res = tag("h" level, text, "id=\"" href "\"");
     for(;ToCLevel < level; ToCLevel++) {
@@ -577,7 +577,7 @@ function heading(level, st,       res, href, u, text,svg) {
     }
     for(;ToCLevel > level; ToCLevel--)
         ToC = ToC "</ul>";
-    ToC = ToC "<li class=\"toc-" level "\"><a class=\"toc-" level "\" href=\"#" href "\">" st "</a>\n";
+    ToC = ToC "<li class=\"toc-" level "\"><a class=\"toc toc-" level "\" href=\"#" href "\">" st "</a>\n";
     ToCLevel = level;
     return res;
 }
@@ -644,7 +644,7 @@ function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
             if(img)
                 res = res "<img src=\"" url "\" title=\"" ld "\" alt=\"" lt "\">";
             else
-                res = res "<a href=\"" url "\" title=\"" ld "\">" lt "</a>";
+                res = res "<a class=\"normal\" href=\"" url "\" title=\"" ld "\">" lt "</a>";
         } else if(match(st, /^[[:space:]]*\[[^\]]*\]/)) {
             lt = substr(rx, 2, length(rx) - 2);
             match(st, /\[[^\]]*\]/);
@@ -659,7 +659,7 @@ function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
             if(img)
                 res = res "<img src=\"" url "\" title=\"" ld "\" alt=\"" lt "\">";
             else if(url)
-                res = res "<a href=\"" url "\" title=\"" ld "\">" lt "</a>";
+                res = res "<a class=\"normal\" href=\"" url "\" title=\"" ld "\">" lt "</a>";
             else
                 res = res "[" lt "][" lr "]";
         } else
@@ -746,24 +746,28 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
 
     css["body"] = "color:%color1%;font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
                 "padding:1em 2em;width:80%;max-width:%maxwidth%;margin:0 auto;min-height:100%;float:none;";
-    css["h1"] = "color:%color1%;border-bottom:1px solid %color1%;padding:0.3em 0.1em;";
+    css["h1"] = "border-bottom:1px solid %color1%;padding:0.3em 0.1em;";
+    css["h1 a"] = "color:%color1%;";
     css["h2"] = "color:%color2%;border-bottom:1px solid %color2%;padding:0.2em 0.1em;";
+    css["h2 a"] = "color:%color2%;";
     css["h3"] = "color:%color3%;border-bottom:1px solid %color3%;padding:0.1em 0.1em;";
-    css["h4,h5,h6"] = "color:%color4%;padding:0.1em 0.1em;";
-    css["h1,h2,h3,h4,h5,h6"] = "font-weight:normal;line-height:1.2em;";
+    css["h3 a"] = "color:%color3%;";
+    css["h4,h5,h6"] = "padding:0.1em 0.1em;";
+    css["h4 a,h5 a,h6 a"] = "color:%color4%;";
+    css["h1,h2,h3,h4,h5,h6"] = "font-weight:bolder;line-height:1.2em;";
     css["h4"] = "border-bottom:1px solid %color4%";
     css["p"] = "margin:0.5em 0.1em;"
     css["hr"] = "background:%color1%;height:1px;border:0;"
-    css["a"] = "color:%color2%;";
-    css["a:visited"] = "color:%color2%;";
-    css["a:active"] = "color:%color4%;";
-    css["a:hover"] = "color:%color4%;";
+    css["a.normal, a.toc"] = "color:%color2%;";
+    #css["a.normal:visited"] = "color:%color2%;";
+    #css["a.normal:active"] = "color:%color4%;";
+    css["a.normal:hover, a.toc:hover"] = "color:%color4%;";
     css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;";
     css["a.header svg"] = "opacity:0;";
     css["a.header:hover svg"] = "opacity:1;";
     css["a.header"] = "text-decoration: none;";
     css["strong,b"] = "color:%color1%";
-    css["code"] = "color:%color2%;";
+    css["code"] = "color:%color2%;font-weight:bold;";
     css["blockquote"] = "margin-left:1em;color:%color2%;border-left:0.2em solid %color3%;padding:0.25em 0.5em;overflow-x:auto;";
     css["pre"] = "color:%color2%;background:%color5%;border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
     css["table"] = "border-collapse:collapse;margin:0.5em;";
@@ -790,7 +794,8 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
 	css["ul.toc"] = "list-style-type:none;";
 
     # Colors:
-    c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
+    #c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
+    c1="#314070";c2="#384877";c3="#6676A8";c4="#738FD0";c5="#FBFCFF";
     # Font Family:
     ff = "sans-serif";
     fs = "11pt";
