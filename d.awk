@@ -31,9 +31,14 @@
 # - `-vPretty=1` enable Syntax highlighting with Google's code prettify
 #        https://github.com/google/code-prettify
 # - `-vHideToCLevel=n` specifies the level of the ToC that should be collapsed by default.
+# - `-vLang=n` specifies the value of the `lang` attribute of the <html> tag; Default = "en"
 # - `-vclassic_underscore=1` words_with_underscores behave like old markdown where the
 #        underscores in the word counts as emphasis. The default behaviour is to have
 #        `words_like_this` not contain any emphasis.
+# - `-vNumberHeadings=1` to enable or disable section numbers in front of headings; Default = 1
+# - `-vNumberH1s=1`: if `NumberHeadings` is enabled, `<H1>` headings are not numbered by
+#        default (because the `<H1>` would typically contain the document title). Use this to
+#        number `<H1>`s as well.
 #
 # I've tested it with Gawk, Nawk and Mawk.
 # Gawk and Nawk worked without issues, but don't use the `-W compat`
@@ -90,13 +95,16 @@
 BEGIN {
 
     # Configuration options
-    if(Title=="") Title = "Documentation";
-    if(Theme=="") Theme = 1;
-    if(Pretty=="") Pretty = 0;
-    if(HideToCLevel=="") HideToCLevel = 3;
+    if(Title== "") Title = "Documentation";
+    if(Theme== "") Theme = 1;
+    if(Pretty== "") Pretty = 0;
+    if(HideToCLevel== "") HideToCLevel = 3;
+    if(Lang == "") Lang = "en";
     #TopLinks = 1;
     #classic_underscore = 1;
     if(MaxWidth=="") MaxWidth="1080px";
+    if(NumberHeadings=="") NumberHeadings = 1;
+    if(NumberH1s=="") NumberH1s = 0;
 
     Mode = (Clean)?"p":"none";
     ToC = ""; ToCLevel = 1;
@@ -194,15 +202,15 @@ END {
             Out = Out tag(Mode, Buf);
     }
 
-    print "<!DOCTYPE html>\n<html><head>"
+    print "<!DOCTYPE html>\n<html lang=\"" Lang "\"><head>"
+    print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
     print "<title>" Title "</title>";
     if(StyleSheet)
         print "<link rel=\"stylesheet\" href=\"" StyleSheet "\">";
     else
         print "<style><!--" CSS "\n--></style>";
-    print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
     if(ToC && match(Out, /!\[toc[-+]?\]/))
-        print "<script type=\"text/javascript\"><!--\n" \
+        print "<script><!--\n" \
             "function toggle_toc(n) {\n" \
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
             "    var btn=document.getElementById('btn-text-' + n);\n" \
@@ -251,7 +259,7 @@ function trim(st) {
     sub(/[[:space:]]+$/, "", st);
     return st;
 }
-function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
+function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plang) {
     if(Mode == "p") {
         if(match(st, /^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/)) {
             linkdesc = ""; LastLink = 0;
@@ -360,15 +368,15 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
         else {
             gsub(/\t/,"    ",Buf);
             if(length(trim(Buf)) > 0) {
-                Lang = "";
+                plang = "";
                 if(match(Preterm, /^[[:space:]]*```+/)) {
-                    Lang = trim(substr(Preterm, RSTART+RLENGTH));
-                    if(Lang) {
-                        Lang = "class=\"prettyprint lang-" Lang "\"";
+                    plang = trim(substr(Preterm, RSTART+RLENGTH));
+                    if(plang) {
+                        plang = "class=\"prettyprint lang-" plang "\"";
                         HasCode=1;
                     }
                 }
-                res = tag("pre", tag("code", escape(Buf), Lang));
+                res = tag("pre", tag("code", escape(Buf), plang));
             }
             pop();
             if(Preterm) sub(/^[[:space:]]*```+[[:alnum:]]*/,"",st);
@@ -555,11 +563,11 @@ function heading(level, st,       res, href, u, text,svg) {
     href = strip_tags(href);
     gsub(/[^-_ [:alnum:]]+/, "", href);
     gsub(/[[:space:]]/, "-", href);
-    if(LinkUrls[href]) {
-        for(u = 1; LinkUrls[href "-" u]; u++);
+    if(TitleUrls[href]) {
+        for(u = 1; TitleUrls[href "-" u]; u++);
         href = href "-" u;
     }
-    # LinkUrls[href] = "#" href;
+    TitleUrls[href] = "#" href;
 
     svg = "<svg width=\"16\" height=\"16\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-30, 8, 8)\" stroke=\"#000000\" opacity=\"0.25\"><rect fill=\"none\" height=\"6\" width=\"8\" x=\"2\" y=\"6\" rx=\"1.5\"/><rect fill=\"none\" height=\"6\" width=\"8\" x=\"6\" y=\"4\" rx=\"1.5\"/></g></svg>";
     text = "<a href=\"#" href "\" class=\"header\">" st "&nbsp;" svg "</a>" (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":"");
@@ -779,7 +787,7 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["dl"] = "margin:0.5em;";
     css["dt"] = "font-weight:bold;";
     css["dd"] = "padding:0.3em;";
-    css["mark"] = "color:%color2%;background-color:%color5%;";
+    css["mark"] = "color:%color5%;background-color:%color4%;";
     css["del,s"] = "color:%color4%;";
     css["a.toc-button"] = "color:%color2%;cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
     css["a.toc-button:hover"] = "color:%color4%;background:%color5%;";
@@ -792,6 +800,42 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css[".highlight"] = "color:%color2%;background-color:%color5%;";
 	css["summary"] = "cursor:pointer;";
 	css["ul.toc"] = "list-style-type:none;";
+
+    if(NumberHeadings)  {
+        if(NumberH1s) {
+            css["body"] = css["body"] "counter-reset: h1 toc1;";
+            css["h1"] = css["h1"] "counter-reset: h2 h3 h4;";
+            css["h2"] = css["h2"] "counter-reset: h3 h4;";
+            css["h3"] = css["h3"] "counter-reset: h4;";
+            css["h1::before"] = "content: counter(h1) \" \"; counter-increment: h1; margin-right: 10px;";
+            css["h2::before"] = "content: counter(h1) \".\"counter(h2) \" \";counter-increment: h2; margin-right: 10px;";
+            css["h3::before"] = "content: counter(h1) \".\"counter(h2) \".\"counter(h3) \" \";counter-increment: h3; margin-right: 10px;";
+            css["h4::before"] = "content: counter(h1) \".\"counter(h2) \".\"counter(h3)\".\"counter(h4) \" \";counter-increment: h4; margin-right: 10px;";
+
+            css["li.toc-1"] = "counter-reset: toc2 toc3 toc4;";
+            css["li.toc-2"] = "counter-reset: toc3 toc4;";
+            css["li.toc-3"] = "counter-reset: toc4;";
+            css["a.toc-1::before"] = "content: counter(h1) \"  \";counter-increment: toc1;";
+            css["a.toc-2::before"] = "content: counter(h1) \".\" counter(toc2) \"  \";counter-increment: toc2;";
+            css["a.toc-3::before"] = "content: counter(h1) \".\" counter(toc2) \".\" counter(toc3) \"  \";counter-increment: toc3;";
+            css["a.toc-4::before"] = "content: counter(h1) \".\" counter(toc2) \".\" counter(toc3) \".\" counter(toc4) \"  \";counter-increment: toc4;";
+
+        } else {
+            css["h1"] = css["h1"] "counter-reset: h2 h3 h4;";
+            css["h2"] = css["h2"] "counter-reset: h3 h4;";
+            css["h3"] = css["h3"] "counter-reset: h4;";
+            css["h2::before"] = "content: counter(h2) \" \";counter-increment: h2; margin-right: 10px;";
+            css["h3::before"] = "content: counter(h2) \".\"counter(h3) \" \";counter-increment: h3; margin-right: 10px;";
+            css["h4::before"] = "content: counter(h2) \".\"counter(h3)\".\"counter(h4) \" \";counter-increment: h4; margin-right: 10px;";
+
+            css["li.toc-1"] = "counter-reset: toc2 toc3 toc4;";
+            css["li.toc-2"] = "counter-reset: toc3 toc4;";
+            css["li.toc-3"] = "counter-reset: toc4;";
+            css["a.toc-2::before"] = "content: counter(toc2) \"  \";counter-increment: toc2;";
+            css["a.toc-3::before"] = "content: counter(toc2) \".\" counter(toc3) \"  \";counter-increment: toc3;";
+            css["a.toc-4::before"] = "content: counter(toc2) \".\" counter(toc3) \".\" counter(toc4) \"  \";counter-increment: toc4;";
+        }
+    }
 
     # Colors:
     #c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";

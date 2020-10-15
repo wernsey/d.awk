@@ -4,7 +4,7 @@ d.awk - Source code documentation script
 Some [Awk][] scripts to generate documentation from [Markdown][]-formatted
 comments in source code.
 
-The [d.awk][] script creates documentation for languages that use `/* */` 
+The [d.awk][] script creates documentation for languages that use `/* */`
 for multiline comments, like C, C++, Java, C#, JavaScript.
 
 The file [hashd.awk][] does the same, but for languages that use `#` symbols
@@ -65,7 +65,7 @@ There are additional scripts in the distribution:
 [mdown.awk]: mdown.awk
 [xtract.awk]: xtract.awk
 [wrap.awk]: wrap.awk
- 
+
 ## Features
 
 It supports most of Markdown:
@@ -265,7 +265,9 @@ details), but the individual files may be redistributed with this notice:
 Things I'd like to add in the future:
 
 - `wrap.awk` adds too much whitespace to code blocks...
-- [ ] It is a known to not work with versions of **mawk** prior to 1.3.4 
+- [ ] It is a known to not work with versions of **mawk** prior to 1.3.4  \
     (The default Awk on Raspian as of this writing is version 1.3.3).
     Please use Gawk instead.
+- The table of contents is in a `<div>` that ends up inside a `<p>`,
+    which is incorrect.
 
