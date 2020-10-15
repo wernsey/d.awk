@@ -20,15 +20,15 @@
     }
 }
 Multi && /\*\// {
-    sub(/[[:space:]]*\*\/.*/,"");
+    sub(/[[:space:]]*\*[[:space:]]?\/.*/,"");
     if($0) {
-        sub(/^[[:space:]]*\*/,"");
+        sub(/^[[:space:]]*\*[[:space:]]?/,"");
         print $0 "\n";
     } else print "";
     Multi = 0;
 }
 Multi && /^[[:space:]]*\*/ {
-    sub(/^[[:space:]]*\*/,"");
+    sub(/^[[:space:]]*\*[[:space:]]?/,"");
     print;
 }
 #Multi { print; }
