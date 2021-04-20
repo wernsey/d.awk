@@ -17,7 +17,7 @@
  *
  * Blank lines in the comment separate paragraphs.
  *
- * Two spaces at the end of the line  
+ * Two spaces at the end of the line
  * forces a linebreak. Here is another line<br>break.
  *
  * Headings can be written like so:
@@ -71,7 +71,7 @@
  *  1. Item 2
  *         * Item 2.1; List styles can be mixed.
  *         * Item 2.2
- *           
+ *
  *           The blank line above contains whitespace, hence a new list is not started
  *           (Paragraphs in lists differ a bit from other markdowns).
  *         * Item 2.3
@@ -123,7 +123,7 @@
  *
  * Code indented with spaces:
  *    //Some code, indented with spaces
- *    
+ *
  *    int main(int argc, char *argv[]) {
  *        return 0;
  *    }
@@ -159,11 +159,11 @@
  *
  * Regression test: The #es in this sample would've caused problems:
  *
- *    # Compile like so:
- *    mvn package
- *    
- *    # Generate Javadocs
- *    mvn javadoc:javadoc
+ *     # Compile like so:
+ *     mvn package
+ *     
+ *     # Generate Javadocs
+ *     mvn javadoc:javadoc
  *
  * This is a diagram:
  *
@@ -218,7 +218,7 @@
  * Image syntax `\![Image Alt Text](example.png)`
  * Escaping images `\![Image Alt Text](example.png)` and links `\[Link Alt Text](example.com)`
  *
- * Images can be encoded as Data URIs: ![Red Dot][reddot]  
+ * Images can be encoded as Data URIs: ![Red Dot][reddot]
  * <sub>The red dot comes from [Wikipedia][datauri]</sub>
  *
  * [dataURI]: https://en.wikipedia.org/wiki/Data_URI_scheme "Data URI scheme"
