@@ -21,7 +21,7 @@ For example, add a comment like this to your source file:
  * file`.
  */
 int main(int argc, char *argv[]) {
-	printf("hello, world");
+    printf("hello, world");
     return 0;
 }
 ```
@@ -260,14 +260,70 @@ details), but the individual files may be redistributed with this notice:
  - <http://fletcher.github.io/MultiMarkdown-4/syntax>
  - <http://spec.commonmark.org>
 
+### Alternatives
+
+r-lyeh's [stddoc.c][] also generates HTML documentation from Markdown comments in
+source code, but takes a very different approach to achieve it: It simply extracts
+the comments, and appends [Markdeep][]'s tags to the output.
+
+Here is an Awk script that more or less achieves the same thing:
+
+```awk
+#! /usr/bin/awk -f
+BEGIN { print "<meta charset=\"utf-8\">" }
+/\/\*\*/ {
+	sub(/^.*\/\*/,"");
+	incomment=1;
+}
+incomment && /\*\// {
+	incomment=0;
+	sub(/[[:space:]]*\*\/.*/,"");
+	sub(/^[[:space:]]*\*[[:space:]]?/,"");
+	print
+}
+incomment && /^[[:space:]]*\*/ {
+	sub(/^[[:space:]]*\*[[:space:]]?/,"");
+	print
+}
+!incomment && /\/\/\// {
+	sub(/.*\/\/\/[[:space:]]?/,"");
+	print
+}
+END {
+	print "<!-- Markdeep: -->";
+	print "<style class=\"fallback\">body{visibility:hidden;white-space:pre;font-family:monospace}</style>";
+	print "<script>markdeepOptions={tocStyle:\"auto\"};</script>";
+	print "<script src=\"https://morgan3d.github.io/markdeep/latest/markdeep.min.js\" charset=\"utf-8\"></script>";
+	print "<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility=\"visible\")</script>"
+}
+```
+
+Markdeep has significantly more features than `d.awk`, but the tradeoff is that it
+has some incompatibilities with GitHub-flavoured Markdown and it requires the
+`markdeep.js` file to be distributed with the documentation.
+
+yiyus' [md2html.awk][] is an Awk script that generates HTML from Markdown with a much
+cleaner parser. I only discovered it long after I wrote my own Markdown parser.
+
+[stddoc.c]: https://github.com/r-lyeh/stddoc.c
+[md2html.awk]: https://github.com/yiyus/md2html.awk/blob/master/md2html.awk
+[Markdeep]: https://casual-effects.com/markdeep/
+
 ## TODO
 
 Things I'd like to add in the future:
 
 - `wrap.awk` adds too much whitespace to code blocks...
-- [ ] It is a known to not work with versions of **mawk** prior to 1.3.4  \
+- [ ] It is known to not work with versions of **mawk** prior to 1.3.4  \
     (The default Awk on Raspian as of this writing is version 1.3.3).
-    Please use Gawk instead.
+    Please upgrade mawk, or use Gawk instead.
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
+- [GitHub-flavoured markdown][github-mermaid] now supports a ` ```mermaid` syntax to
+  include [mermaid][] diagrams in documents.  \
+  I recon it should be simple enough to only pull in [mermaid from the CDN][mermaid-cdn] if there
+  are ` ```mermaid` blocks in the code.
 
+[github-mermaid]: https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/
+[mermaid]: https://github.com/mermaid-js/mermaid
+[mermaid-cdn]: https://mermaid-js.github.io/mermaid/#/n00b-gettingStarted?id=_3-calling-the-javascript-api
