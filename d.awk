@@ -95,13 +95,6 @@
 #     notice and this notice are preserved. This file is offered as-is,
 #     without any warranty.
 #
-# ```mermaid
-#   graph TD;
-#       A-->B;
-#       A-->C;
-#       B-->D;
-#       C-->D;
-# ```
 
 BEGIN {
 
@@ -552,13 +545,24 @@ function scrub(st,    mp, ms, me, r, p, tg, a) {
             }
             tg = substr(st, 1, p - 1);
             if(match(tg,/^[[:alpha:]]+[[:space:]]/)) {
-                a = substr(tg,RSTART+RLENGTH-1);
+                a = trim(substr(tg,RSTART+RLENGTH-1));
                 tg = substr(tg,1,RLENGTH-1);
             } else
                 a = "";
 
             if(match(tolower(tg), "^/?(a|abbr|div|span|blockquote|pre|img|code|p|em|strong|sup|sub|del|ins|s|u|b|i|br|hr|ul|ol|li|table|thead|tfoot|tbody|tr|th|td|caption|column|col|colgroup|figure|figcaption|dl|dd|dt|mark|cite|q|var|samp|small|details|summary)$")) {
-                r = r "<" tg a ">";
+                if(!match(tg, /\//)) {
+                    if(match(a, /class="/)) {
+                        sub(/class="/, "class=\"dawk-ex ", a);
+                    } else {
+                        if(a)
+                            a = a " class=\"dawk-ex\""
+                        else
+                            a = "class=\"dawk-ex\""
+                    }
+                    r = r "<" tg " " a ">";
+                } else
+                    r = r "<" tg ">";
             } else if(match(tg, "^[[:alpha:]]+://[[:graph:]]+$")) {
                 if(!a) a = tg;
                 r = r "<a class=\"normal\" href=\"" tg "\">" a "</a>";
@@ -807,17 +811,17 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["code"] = "color:%color2%;font-weight:bold;";
     css["blockquote"] = "margin-left:1em;color:%color2%;border-left:0.2em solid %color3%;padding:0.25em 0.5em;overflow-x:auto;";
     css["pre"] = "color:%color2%;background:%color5%;border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
-    css["table"] = "border-collapse:collapse;margin:0.5em;";
-    css["th,td"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
-    css["th"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
-    css["tr:nth-child(odd)"] = "background-color:%color5%;";
-    css["div"] = "padding:0.5em;";
-    css["caption"] = "padding:0.5em;font-style:italic;";
-    css["dl"] = "margin:0.5em;";
-    css["dt"] = "font-weight:bold;";
-    css["dd"] = "padding:0.3em;";
-    css["mark"] = "color:%color5%;background-color:%color4%;";
-    css["del,s"] = "color:%color4%;";
+    css["table.dawk-ex"] = "border-collapse:collapse;margin:0.5em;";
+    css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
+    css["th.dawk-ex"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
+    css["tr.dawk-ex:nth-child(odd)"] = "background-color:%color5%;";
+    css["div.dawk-ex"] = "padding:0.5em;";
+    css["caption.dawk-ex"] = "padding:0.5em;font-style:italic;";
+    css["dl.dawk-ex"] = "margin:0.5em;";
+    css["dt.dawk-ex"] = "font-weight:bold;";
+    css["dd.dawk-ex"] = "padding:0.3em;";
+    css["mark.dawk-ex"] = "color:%color5%;background-color:%color4%;";
+    css["del.dawk-ex,s.dawk-ex"] = "color:%color4%;";
     css["a.toc-button"] = "color:%color2%;cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
     css["a.toc-button:hover"] = "color:%color4%;background:%color5%;";
     css["div#table-of-contents"] = "padding:0;font-size:smaller;";
