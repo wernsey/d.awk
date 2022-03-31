@@ -17,14 +17,14 @@
  *
  * Blank lines in the comment separate paragraphs.
  *
- * Two spaces at the end of the line
+ * Two spaces at the end of the line  
  * forces a linebreak. Here is another line<br>break.
  *
  * Headings can be written like so:
- *    Heading 1
- *    =========
- *    Heading 2
- *    ---------
+ *     Heading 1
+ *     =========
+ *     Heading 2
+ *     ---------
  *
  * Alternatively:
  * ```
@@ -66,14 +66,15 @@
  *       1. Item 1.1
  *          1981\. This line started with a number.
  *       1. Item 1.2;
- *          This item consists of multiple lines
+ *          This item consists of multiple lines  
  *          with a forced line break (two spaces at the end of the last line).
  *  1. Item 2
  *         * Item 2.1; List styles can be mixed.
  *         * Item 2.2
- *
+ *           
  *           The blank line above contains whitespace, hence a new list is not started
- *           (Paragraphs in lists differ a bit from other markdowns).
+ *           (Paragraphs in lists differ a bit from other markdowns).  \
+ *           (If this text is in a code block, it probably means I've trimmed trailing whitespace again)
  *         * Item 2.3
  *  1. Item 3
  *        1. Item 3.1
@@ -123,7 +124,7 @@
  *
  * Code indented with spaces:
  *    //Some code, indented with spaces
- *
+ *    
  *    int main(int argc, char *argv[]) {
  *        return 0;
  *    }
@@ -142,7 +143,6 @@
  * You can use ```` ```lang ```` to specify a language, which can be syntax highlighted
  * Google's [code prettifier](https://github.com/google/code-prettify). The example
  * below specifies ```` ```java ```` to syntax highlight a block of Java code.
- * You have to specify `-vPretty=1` on the command line for the functionality to work.
  *
  * ```java
  * // Some sample Java code
@@ -152,6 +152,10 @@
  *     }
  * }
  * ```
+ *
+ * Using ```` ```auto ```` causes the prettifier to guess the language.
+ *
+ * You can specify `-vPretty=0` on the command line to disable this functionality.
  *
  * Unfortunately, if you use C/C++ you have to escape your asterisks
  * like **int foo(int \*x, int \*y)** or this **int main(int argc, char \*argv[])**
@@ -181,6 +185,20 @@
  *           +---------+        |
  *                     |        |
  *                     +--------+
+ *
+ * [Mermaid][] diagrams:
+ *
+ * ```mermaid
+ *   graph TD;
+ *       A-->B;
+ *       A-->C;
+ *       B-->D;
+ *       C-->D;
+ * ```
+ *
+ * You can specify `-vMermaid=0` on the command line to disable this functionality.
+ *
+ * [Mermaid]: https://github.com/mermaid-js/mermaid
  *
  * Hyperlinks
  * ----------

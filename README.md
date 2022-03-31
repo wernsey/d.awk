@@ -50,7 +50,7 @@ The script can also generate HTML from a normal Markdown document using the `-v
 Clean=1` command-line option:
 
 ```sh
-./d.awk -vPretty=1 -v Clean=1 README.md > README.html
+./d.awk -v Clean=1 README.md > README.html
 ```
 
 There are additional scripts in the distribution:
@@ -94,11 +94,16 @@ forces a line break.
 The file [demo.c](demo.c) in the distribution serves as an example, user guide
 and test at the same time.
 
+[Mermaid][mermaid] diagrams are supported through the same ` ```mermaid` syntax as
+in [GitHub-flavoured markdown][github-mermaid]
+
 [Awk]: https://en.wikipedia.org/wiki/AWK
 [Markdown]: https://en.wikipedia.org/wiki/Markdown
 [code-prettify]: https://github.com/google/code-prettify
 [github-syntax]: https://help.github.com/articles/creating-and-highlighting-code-blocks/#syntax-highlighting
 [MultiMarkdown]: http://fletcher.github.io/MultiMarkdown-4/syntax
+[github-mermaid]: https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/
+[mermaid]: https://github.com/mermaid-js/mermaid
 
 ## Motivation
 
@@ -156,8 +161,11 @@ to the script through Awk's `-v` command-line option:
 - `-v Clean=1` to treat the input file as a normal Markdown file.
 - `-v StyleSheet=style.css` to use a separate file as style sheet.
 - `-v TopLinks=1` to have links to the top of the document next to headers.
-- `-v Pretty=1` enable Syntax highlighting with Google's [code-prettify][]
-  library.
+- `-v Pretty=0` disable syntax highlighting.  \
+  By default a ```` ```lang ```` -style block will cause the library to pull in
+  Google's [code-prettify][] library to syntax highlight the block in the language `lang`.  \
+  This switch disables that functionality.
+- `-vMermaid=0` disable [Mermaid][] diagrams.
 - `-v HideToCLevel=n` specifies the level of the Table of Contents that should
   be collapsed by default. For example, a value of 3 means that headers above
   level 3 will be collapsed in the Table of Contents initially.
@@ -319,11 +327,3 @@ Things I'd like to add in the future:
     Please upgrade mawk, or use Gawk instead.
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
-- [GitHub-flavoured markdown][github-mermaid] now supports a ` ```mermaid` syntax to
-  include [mermaid][] diagrams in documents.  \
-  I recon it should be simple enough to only pull in [mermaid from the CDN][mermaid-cdn] if there
-  are ` ```mermaid` blocks in the code.
-
-[github-mermaid]: https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/
-[mermaid]: https://github.com/mermaid-js/mermaid
-[mermaid-cdn]: https://mermaid-js.github.io/mermaid/#/n00b-gettingStarted?id=_3-calling-the-javascript-api

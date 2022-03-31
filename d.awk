@@ -28,8 +28,8 @@
 # - `-vTheme=n` with n either 0 to disable CSS or 1 to enable; Default = 1
 # - `-vTopLinks=1` to have links to the top of the doc next to headers.
 # - `-vMaxWidth=1080px` specifies the Maximum width of the HTML output.
-# - `-vPretty=1` enable Syntax highlighting with Google's code prettify
-#        https://github.com/google/code-prettify
+# - `-vPretty=0` disable syntax highlighting with Google's [code prettify][].
+# - `-vMermaid=0` disable [Mermaid][] diagrams.
 # - `-vHideToCLevel=n` specifies the level of the ToC that should be collapsed by default.
 # - `-vLang=n` specifies the value of the `lang` attribute of the <html> tag; Default = "en"
 # - `-vclassic_underscore=1` words_with_underscores behave like old markdown where the
@@ -44,6 +44,9 @@
 # Gawk and Nawk worked without issues, but don't use the `-W compat`
 # or `-W traditional` settings with Gawk.
 # Mawk v1.3.4 worked correctly but v1.3.3 choked on it.
+#
+# [code prettify]: https://github.com/google/code-prettify
+# [Mermaid]: https://github.com/mermaid-js/mermaid
 #
 # ## Extensions
 #
@@ -91,13 +94,22 @@
 #     are permitted in any medium without royalty provided the copyright
 #     notice and this notice are preserved. This file is offered as-is,
 #     without any warranty.
+#
+# ```mermaid
+#   graph TD;
+#       A-->B;
+#       A-->C;
+#       B-->D;
+#       C-->D;
+# ```
 
 BEGIN {
 
     # Configuration options
     if(Title== "") Title = "Documentation";
     if(Theme== "") Theme = 1;
-    if(Pretty== "") Pretty = 0;
+    if(Pretty== "") Pretty = 1;
+    if(Mermaid== "") Mermaid = 1;
     if(HideToCLevel== "") HideToCLevel = 3;
     if(Lang == "") Lang = "en";
     #TopLinks = 1;
@@ -226,8 +238,6 @@ END {
             "    }\n" \
             "}\n" \
             "//-->\n</script>";
-    if(Pretty && HasCode)
-        print "<script src=\"https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js\"></script>";
     print "</head><body>";
     if(Out) {
         Out = fix_footnotes(Out);
@@ -240,6 +250,14 @@ END {
             footnotes = fix_links(footnotes);
             print "<hr><ol class=\"footnotes\">\n" footnotes "</ol>";
         }
+    }
+
+    if(Pretty && HasPretty) {
+        print "<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js\"></script>";
+    }
+    if(Mermaid && HasMermaid) {
+        print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
+        print "<script>mermaid.initialize({ startOnLoad: true });</script>";
     }
     print "</body></html>"
 }
@@ -259,7 +277,7 @@ function trim(st) {
     sub(/[[:space:]]+$/, "", st);
     return st;
 }
-function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plang) {
+function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plang, mmaid) {
     if(Mode == "p") {
         if(match(st, /^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/)) {
             linkdesc = ""; LastLink = 0;
@@ -368,15 +386,26 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
         else {
             gsub(/\t/,"    ",Buf);
             if(length(trim(Buf)) > 0) {
-                plang = "";
+                plang = ""; mmaid=0;
                 if(match(Preterm, /^[[:space:]]*```+/)) {
                     plang = trim(substr(Preterm, RSTART+RLENGTH));
                     if(plang) {
-                        plang = "class=\"prettyprint lang-" plang "\"";
-                        HasCode=1;
+                        if(plang == "mermaid") {
+                            mmaid = 1;
+                            HasMermaid = 1;
+                        } else {
+                            HasPretty = 1;
+                            if(plang == "auto")
+                                plang = "class=\"prettyprint\"";
+                            else
+                                plang = "class=\"prettyprint lang-" plang "\"";
+                        }
                     }
                 }
-                res = tag("pre", tag("code", escape(Buf), plang));
+                if(mmaid && Mermaid)
+                    res = tag("div", Buf, "class=\"mermaid\"");
+                else
+                    res = tag("pre", tag("code", escape(Buf), plang));
             }
             pop();
             if(Preterm) sub(/^[[:space:]]*```+[[:alnum:]]*/,"",st);
@@ -798,8 +827,8 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["a.footnote-back"] = "text-decoration:initial;font-size:x-small;";
     css[".fade"] = "color:%color5%;";
     css[".highlight"] = "color:%color2%;background-color:%color5%;";
-	css["summary"] = "cursor:pointer;";
-	css["ul.toc"] = "list-style-type:none;";
+    css["summary"] = "cursor:pointer;";
+    css["ul.toc"] = "list-style-type:none;";
 
     if(NumberHeadings)  {
         if(NumberH1s) {
