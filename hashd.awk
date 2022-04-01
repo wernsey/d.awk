@@ -18,13 +18,17 @@
 BEGIN {
 
     # Configuration options
-    if(Title=="") Title = "Documentation";
-    if(Theme=="") Theme = 1;
-    if(Pretty=="") Pretty = 0;
-    if(HideToCLevel=="") HideToCLevel = 3;
+    if(Title== "") Title = "Documentation";
+    if(Theme== "") Theme = 1;
+    if(Pretty== "") Pretty = 1;
+    if(Mermaid== "") Mermaid = 1;
+    if(HideToCLevel== "") HideToCLevel = 3;
+    if(Lang == "") Lang = "en";
     #TopLinks = 1;
     #classic_underscore = 1;
     if(MaxWidth=="") MaxWidth="1080px";
+    if(NumberHeadings=="") NumberHeadings = 1;
+    if(NumberH1s=="") NumberH1s = 0;
 
     Mode = (Clean)?"p":"none";
     ToC = ""; ToCLevel = 1;
@@ -76,32 +80,30 @@ END {
             Out = Out tag(Mode, Buf);
     }
 
-    print "<!DOCTYPE html>\n<html><head>"
+    print "<!DOCTYPE html>\n<html lang=\"" Lang "\"><head>"
+    print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
     print "<title>" Title "</title>";
     if(StyleSheet)
         print "<link rel=\"stylesheet\" href=\"" StyleSheet "\">";
     else
         print "<style><!--" CSS "\n--></style>";
-    print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
     if(ToC && match(Out, /!\[toc[-+]?\]/))
-        print "<script type=\"text/javascript\"><!--\n" \
+        print "<script><!--\n" \
             "function toggle_toc(n) {\n" \
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
             "    var btn=document.getElementById('btn-text-' + n);\n" \
             "    toc.style.display=(toc.style.display=='none')?'block':'none';\n" \
-            "    btn.innerHTML=(toc.style.display=='none')?'&#x25BC;':'&#x25B2;';\n" \
+            "    btn.innerHTML=(toc.style.display=='none')?'&#x25BA;':'&#x25BC;';\n" \
             "}\n" \
             "function toggle_toc_ul(n) {   \n" \
             "    var toc=document.getElementById('toc-ul-' + n);   \n" \
             "    var btn=document.getElementById('toc-btn-' + n);   \n" \
             "    if(toc) {\n" \
             "        toc.style.display=(toc.style.display=='none')?'block':'none';   \n" \
-            "        btn.innerHTML=(toc.style.display=='none')?'&#x25BC;':'&#x25B2;';\n" \
+            "        btn.innerHTML=(toc.style.display=='none')?'&#x25BA;':'&#x25BC;';\n" \
             "    }\n" \
             "}\n" \
             "//-->\n</script>";
-    if(Pretty && HasCode)
-        print "<script src=\"https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js\"></script>";
     print "</head><body>";
     if(Out) {
         Out = fix_footnotes(Out);
@@ -114,6 +116,14 @@ END {
             footnotes = fix_links(footnotes);
             print "<hr><ol class=\"footnotes\">\n" footnotes "</ol>";
         }
+    }
+
+    if(Pretty && HasPretty) {
+        print "<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js\"></script>";
+    }
+    if(Mermaid && HasMermaid) {
+        print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
+        print "<script>mermaid.initialize({ startOnLoad: true });</script>";
     }
     print "</body></html>"
 }
@@ -133,7 +143,7 @@ function trim(st) {
     sub(/[[:space:]]+$/, "", st);
     return st;
 }
-function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
+function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plang, mmaid) {
     if(Mode == "p") {
         if(match(st, /^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/)) {
             linkdesc = ""; LastLink = 0;
@@ -242,15 +252,26 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def) {
         else {
             gsub(/\t/,"    ",Buf);
             if(length(trim(Buf)) > 0) {
-                Lang = "";
+                plang = ""; mmaid=0;
                 if(match(Preterm, /^[[:space:]]*```+/)) {
-                    Lang = trim(substr(Preterm, RSTART+RLENGTH));
-                    if(Lang) {
-                        Lang = "class=\"prettyprint lang-" Lang "\"";
-                        HasCode=1;
+                    plang = trim(substr(Preterm, RSTART+RLENGTH));
+                    if(plang) {
+                        if(plang == "mermaid") {
+                            mmaid = 1;
+                            HasMermaid = 1;
+                        } else {
+                            HasPretty = 1;
+                            if(plang == "auto")
+                                plang = "class=\"prettyprint\"";
+                            else
+                                plang = "class=\"prettyprint lang-" plang "\"";
+                        }
                     }
                 }
-                res = tag("pre", tag("code", escape(Buf), Lang));
+                if(mmaid && Mermaid)
+                    res = tag("div", Buf, "class=\"mermaid\"");
+                else
+                    res = tag("pre", tag("code", escape(Buf), plang));
             }
             pop();
             if(Preterm) sub(/^[[:space:]]*```+[[:alnum:]]*/,"",st);
@@ -397,19 +418,30 @@ function scrub(st,    mp, ms, me, r, p, tg, a) {
             }
             tg = substr(st, 1, p - 1);
             if(match(tg,/^[[:alpha:]]+[[:space:]]/)) {
-                a = substr(tg,RSTART+RLENGTH-1);
+                a = trim(substr(tg,RSTART+RLENGTH-1));
                 tg = substr(tg,1,RLENGTH-1);
             } else
                 a = "";
 
             if(match(tolower(tg), "^/?(a|abbr|div|span|blockquote|pre|img|code|p|em|strong|sup|sub|del|ins|s|u|b|i|br|hr|ul|ol|li|table|thead|tfoot|tbody|tr|th|td|caption|column|col|colgroup|figure|figcaption|dl|dd|dt|mark|cite|q|var|samp|small|details|summary)$")) {
-                r = r "<" tg a ">";
+                if(!match(tg, /\//)) {
+                    if(match(a, /class="/)) {
+                        sub(/class="/, "class=\"dawk-ex ", a);
+                    } else {
+                        if(a)
+                            a = a " class=\"dawk-ex\""
+                        else
+                            a = "class=\"dawk-ex\""
+                    }
+                    r = r "<" tg " " a ">";
+                } else
+                    r = r "<" tg ">";
             } else if(match(tg, "^[[:alpha:]]+://[[:graph:]]+$")) {
                 if(!a) a = tg;
-                r = r "<a href=\"" tg "\">" a "</a>";
+                r = r "<a class=\"normal\" href=\"" tg "\">" a "</a>";
             } else if(match(tg, "^[[:graph:]]+@[[:graph:]]+$")) {
                 if(!a) a = tg;
-                r = r "<a href=\"" obfuscate("mailto:" tg) "\">" obfuscate(a) "</a>";
+                r = r "<a class=\"normal\" href=\"" obfuscate("mailto:" tg) "\">" obfuscate(a) "</a>";
             } else {
                 r = r "&lt;";
                 continue;
@@ -430,29 +462,36 @@ function scrub(st,    mp, ms, me, r, p, tg, a) {
 
 function push(newmode) {Stack[StackTop++] = Mode; Mode = newmode;}
 function pop() {Mode = Stack[--StackTop];Buf = ""; return Mode;}
-function heading(level, st,       res, href) {
-    st = trim(st);
+function heading(level, st,       res, href, u, text,svg) {
     if(level > 6) level = 6;
+    st = trim(st);
     href = tolower(st);
     href = strip_tags(href);
-    gsub(/[^ [:alnum:]]+/, "", href);
-    gsub(/ +/, "-", href);
-    if(!LinkUrls[href]) LinkUrls[href] = "#" href;
-    if(!LinkUrls[tolower(st)]) LinkUrls[tolower(st)] = "#" href;
-    res = tag("h" level, st (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":""), "id=\"" href "\"");
+    gsub(/[^-_ [:alnum:]]+/, "", href);
+    gsub(/[[:space:]]/, "-", href);
+    if(TitleUrls[href]) {
+        for(u = 1; TitleUrls[href "-" u]; u++);
+        href = href "-" u;
+    }
+    TitleUrls[href] = "#" href;
+
+    svg = "<svg width=\"16\" height=\"16\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-30, 8, 8)\" stroke=\"#000000\" opacity=\"0.25\"><rect fill=\"none\" height=\"6\" width=\"8\" x=\"2\" y=\"6\" rx=\"1.5\"/><rect fill=\"none\" height=\"6\" width=\"8\" x=\"6\" y=\"4\" rx=\"1.5\"/></g></svg>";
+    text = "<a href=\"#" href "\" class=\"header\">" st "&nbsp;" svg "</a>" (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":"");
+
+    res = tag("h" level, text, "id=\"" href "\"");
     for(;ToCLevel < level; ToCLevel++) {
         ToC_ID++;
         if(ToCLevel < HideToCLevel) {
-            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25B2;</a>";
-            ToC = ToC "<ul class=\"toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
-        } else {
             ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BC;</a>";
-            ToC = ToC "<ul style=\"display:none;\" class=\"toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
+            ToC = ToC "<ul class=\"toc toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
+        } else {
+            ToC = ToC "<a class=\"toc toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BA;</a>";
+            ToC = ToC "<ul style=\"display:none;\" class=\"toc toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
         }
     }
     for(;ToCLevel > level; ToCLevel--)
         ToC = ToC "</ul>";
-    ToC = ToC "<li class=\"toc-" level "\"><a class=\"toc-" level "\" href=\"#" href "\">" st "</a>\n";
+    ToC = ToC "<li class=\"toc-" level "\"><a class=\"toc toc-" level "\" href=\"#" href "\">" st "</a>\n";
     ToCLevel = level;
     return res;
 }
@@ -471,8 +510,8 @@ function make_toc(st,              r,p,dis,t,n) {
 
         ++n;
         dis = index(substr(st,RSTART,RLENGTH),"+");
-        t = "<div>\n<a id=\"toc-button-" n "\" class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text-" n "\">" (dis?"&#x25B2;":"&#x25BC;") "</span>&nbsp;Contents</a>\n" \
-            "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc-1\">" ToC "</ul>\n</div>\n</div>";
+        t = "<div>\n<a id=\"toc-button-" n "\" class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text-" n "\">" (dis?"&#x25BC;":"&#x25BA;") "</span>&nbsp;Contents</a>\n" \
+            "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc toc-1\">" ToC "</ul>\n</div>\n</div>";
         r = r substr(st,1,RSTART-1);
         r = r t;
         st = substr(st,RSTART+RLENGTH);
@@ -482,13 +521,13 @@ function make_toc(st,              r,p,dis,t,n) {
 }
 function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
     do {
-        pre = match(st, /<pre>/); # Don't substitute in <pre> blocks
+        pre = match(st, /<(pre|code)>/); # Don't substitute in <pre> or <code> blocks
         pos = match(st, /\[[^\]]+\]/);
         if(!pos)break;
         if(pre && pre < pos) {
-            pre = match(st, /<\/pre>/);
+            match(st, /<\/(pre|code)>/);
             res = res substr(st,1,RSTART+RLENGTH);
-            st = substr(st, RSTART+RLENGTH);
+            st = substr(st, RSTART+RLENGTH+1);
             continue;
         }
         img=substr(st,RSTART-1,1)=="!";
@@ -519,7 +558,7 @@ function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
             if(img)
                 res = res "<img src=\"" url "\" title=\"" ld "\" alt=\"" lt "\">";
             else
-                res = res "<a href=\"" url "\" title=\"" ld "\">" lt "</a>";
+                res = res "<a class=\"normal\" href=\"" url "\" title=\"" ld "\">" lt "</a>";
         } else if(match(st, /^[[:space:]]*\[[^\]]*\]/)) {
             lt = substr(rx, 2, length(rx) - 2);
             match(st, /\[[^\]]*\]/);
@@ -533,8 +572,10 @@ function fix_links(st,          lt,ld,lr,url,img,res,rx,pos,pre) {
             ld = LinkDescs[lr];
             if(img)
                 res = res "<img src=\"" url "\" title=\"" ld "\" alt=\"" lt "\">";
+            else if(url)
+                res = res "<a class=\"normal\" href=\"" url "\" title=\"" ld "\">" lt "</a>";
             else
-                res = res "<a href=\"" url "\" title=\"" ld "\">" lt "</a>";
+                res = res "[" lt "][" lr "]";
         } else
             res = res (img?"!":"") rx;
     } while(pos > 0);
@@ -619,34 +660,41 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
 
     css["body"] = "color:%color1%;font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
                 "padding:1em 2em;width:80%;max-width:%maxwidth%;margin:0 auto;min-height:100%;float:none;";
-    css["h1"] = "color:%color1%;border-bottom:1px solid %color1%;padding:0.3em 0.1em;";
+    css["h1"] = "border-bottom:1px solid %color1%;padding:0.3em 0.1em;";
+    css["h1 a"] = "color:%color1%;";
     css["h2"] = "color:%color2%;border-bottom:1px solid %color2%;padding:0.2em 0.1em;";
+    css["h2 a"] = "color:%color2%;";
     css["h3"] = "color:%color3%;border-bottom:1px solid %color3%;padding:0.1em 0.1em;";
-    css["h4,h5,h6"] = "color:%color4%;padding:0.1em 0.1em;";
-    css["h1,h2,h3,h4,h5,h6"] = "font-weight:normal;line-height:1.2em;";
+    css["h3 a"] = "color:%color3%;";
+    css["h4,h5,h6"] = "padding:0.1em 0.1em;";
+    css["h4 a,h5 a,h6 a"] = "color:%color4%;";
+    css["h1,h2,h3,h4,h5,h6"] = "font-weight:bolder;line-height:1.2em;";
     css["h4"] = "border-bottom:1px solid %color4%";
     css["p"] = "margin:0.5em 0.1em;"
     css["hr"] = "background:%color1%;height:1px;border:0;"
-    css["a"] = "color:%color2%;";
-    css["a:visited"] = "color:%color2%;";
-    css["a:active"] = "color:%color4%;";
-    css["a:hover"] = "color:%color4%;";
+    css["a.normal, a.toc"] = "color:%color2%;";
+    #css["a.normal:visited"] = "color:%color2%;";
+    #css["a.normal:active"] = "color:%color4%;";
+    css["a.normal:hover, a.toc:hover"] = "color:%color4%;";
     css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;";
+    css["a.header svg"] = "opacity:0;";
+    css["a.header:hover svg"] = "opacity:1;";
+    css["a.header"] = "text-decoration: none;";
     css["strong,b"] = "color:%color1%";
-    css["code"] = "color:%color2%;";
+    css["code"] = "color:%color2%;font-weight:bold;";
     css["blockquote"] = "margin-left:1em;color:%color2%;border-left:0.2em solid %color3%;padding:0.25em 0.5em;overflow-x:auto;";
     css["pre"] = "color:%color2%;background:%color5%;border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
-    css["table"] = "border-collapse:collapse;margin:0.5em;";
-    css["th,td"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
-    css["th"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
-    css["tr:nth-child(odd)"] = "background-color:%color5%;";
-    css["div"] = "padding:0.5em;";
-    css["caption"] = "padding:0.5em;font-style:italic;";
-    css["dl"] = "margin:0.5em;";
-    css["dt"] = "font-weight:bold;";
-    css["dd"] = "padding:0.3em;";
-    css["mark"] = "color:%color2%;background-color:%color5%;";
-    css["del,s"] = "color:%color4%;";
+    css["table.dawk-ex"] = "border-collapse:collapse;margin:0.5em;";
+    css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
+    css["th.dawk-ex"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
+    css["tr.dawk-ex:nth-child(odd)"] = "background-color:%color5%;";
+    css["div.dawk-ex"] = "padding:0.5em;";
+    css["caption.dawk-ex"] = "padding:0.5em;font-style:italic;";
+    css["dl.dawk-ex"] = "margin:0.5em;";
+    css["dt.dawk-ex"] = "font-weight:bold;";
+    css["dd.dawk-ex"] = "padding:0.3em;";
+    css["mark.dawk-ex"] = "color:%color5%;background-color:%color4%;";
+    css["del.dawk-ex,s.dawk-ex"] = "color:%color4%;";
     css["a.toc-button"] = "color:%color2%;cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
     css["a.toc-button:hover"] = "color:%color4%;background:%color5%;";
     css["div#table-of-contents"] = "padding:0;font-size:smaller;";
@@ -656,10 +704,48 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["a.footnote-back"] = "text-decoration:initial;font-size:x-small;";
     css[".fade"] = "color:%color5%;";
     css[".highlight"] = "color:%color2%;background-color:%color5%;";
-	css["summary"] = "cursor:pointer;";
+    css["summary"] = "cursor:pointer;";
+    css["ul.toc"] = "list-style-type:none;";
+
+    if(NumberHeadings)  {
+        if(NumberH1s) {
+            css["body"] = css["body"] "counter-reset: h1 toc1;";
+            css["h1"] = css["h1"] "counter-reset: h2 h3 h4;";
+            css["h2"] = css["h2"] "counter-reset: h3 h4;";
+            css["h3"] = css["h3"] "counter-reset: h4;";
+            css["h1::before"] = "content: counter(h1) \" \"; counter-increment: h1; margin-right: 10px;";
+            css["h2::before"] = "content: counter(h1) \".\"counter(h2) \" \";counter-increment: h2; margin-right: 10px;";
+            css["h3::before"] = "content: counter(h1) \".\"counter(h2) \".\"counter(h3) \" \";counter-increment: h3; margin-right: 10px;";
+            css["h4::before"] = "content: counter(h1) \".\"counter(h2) \".\"counter(h3)\".\"counter(h4) \" \";counter-increment: h4; margin-right: 10px;";
+
+            css["li.toc-1"] = "counter-reset: toc2 toc3 toc4;";
+            css["li.toc-2"] = "counter-reset: toc3 toc4;";
+            css["li.toc-3"] = "counter-reset: toc4;";
+            css["a.toc-1::before"] = "content: counter(h1) \"  \";counter-increment: toc1;";
+            css["a.toc-2::before"] = "content: counter(h1) \".\" counter(toc2) \"  \";counter-increment: toc2;";
+            css["a.toc-3::before"] = "content: counter(h1) \".\" counter(toc2) \".\" counter(toc3) \"  \";counter-increment: toc3;";
+            css["a.toc-4::before"] = "content: counter(h1) \".\" counter(toc2) \".\" counter(toc3) \".\" counter(toc4) \"  \";counter-increment: toc4;";
+
+        } else {
+            css["h1"] = css["h1"] "counter-reset: h2 h3 h4;";
+            css["h2"] = css["h2"] "counter-reset: h3 h4;";
+            css["h3"] = css["h3"] "counter-reset: h4;";
+            css["h2::before"] = "content: counter(h2) \" \";counter-increment: h2; margin-right: 10px;";
+            css["h3::before"] = "content: counter(h2) \".\"counter(h3) \" \";counter-increment: h3; margin-right: 10px;";
+            css["h4::before"] = "content: counter(h2) \".\"counter(h3)\".\"counter(h4) \" \";counter-increment: h4; margin-right: 10px;";
+
+            css["li.toc-1"] = "counter-reset: toc2 toc3 toc4;";
+            css["li.toc-2"] = "counter-reset: toc3 toc4;";
+            css["li.toc-3"] = "counter-reset: toc4;";
+            css["a.toc-2::before"] = "content: counter(toc2) \"  \";counter-increment: toc2;";
+            css["a.toc-3::before"] = "content: counter(toc2) \".\" counter(toc3) \"  \";counter-increment: toc3;";
+            css["a.toc-4::before"] = "content: counter(toc2) \".\" counter(toc3) \".\" counter(toc4) \"  \";counter-increment: toc4;";
+        }
+    }
 
     # Colors:
-    c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
+    #c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
+    c1="#314070";c2="#384877";c3="#6676A8";c4="#738FD0";c5="#FBFCFF";
     # Font Family:
     ff = "sans-serif";
     fs = "11pt";
