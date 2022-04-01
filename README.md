@@ -81,12 +81,15 @@ It also supports a number of extensions, mostly based on GitHub syntax:
 * ```` ``` ````-style code blocks
   * You can specify a language according to Github's [Syntax Highlighting][github-syntax]
     rules, for example ```` ```java ````
-  * This requires that you specify `-vPretty=1` on the command line.  \
-    (It is disabled by default because the generated HTML uses a third-party
-    script)
   * It uses Google's [code-prettify][] library for the syntax highlighting.
+  * This pulls in a third-party script. It can be disabled by specifying
+    `-vPretty=0` on the command line.
 * Tables, using the same syntax as [GitHub-flavoured markdown][github-tables].
-* [x] GitHub-style task lists
+* [Mermaid][mermaid] diagrams are supported through the same ```` ```mermaid ```` syntax as
+  in [GitHub-flavoured markdown][github-mermaid]
+  * This pulls in a third-party script. It can be disabled by specifying
+    `-vMermaid=0` on the command line.
+* `[x]` GitHub-style task lists
 * [MultiMarkdown][]-style footnotes and abbreviations.
 * Backslash at the end of a line  \
 forces a line break.
@@ -94,9 +97,6 @@ forces a line break.
 
 The file [demo.c](demo.c) in the distribution serves as an example, user guide
 and test at the same time.
-
-[Mermaid][mermaid] diagrams are supported through the same ` ```mermaid` syntax as
-in [GitHub-flavoured markdown][github-mermaid]
 
 [Awk]: https://en.wikipedia.org/wiki/AWK
 [Markdown]: https://en.wikipedia.org/wiki/Markdown
