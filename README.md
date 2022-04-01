@@ -79,12 +79,13 @@ It supports most of Markdown:
 
 It also supports a number of extensions, mostly based on GitHub syntax:
 * ```` ``` ````-style code blocks
-  * You can specify a language according to Github's [Syntax
-    Highlighting][github-syntax] rules, for example ```` ```java ````
+  * You can specify a language according to Github's [Syntax Highlighting][github-syntax]
+    rules, for example ```` ```java ````
   * This requires that you specify `-vPretty=1` on the command line.  \
     (It is disabled by default because the generated HTML uses a third-party
     script)
   * It uses Google's [code-prettify][] library for the syntax highlighting.
+* Tables, using the same syntax as [GitHub-flavoured markdown][github-tables].
 * [x] GitHub-style task lists
 * [MultiMarkdown][]-style footnotes and abbreviations.
 * Backslash at the end of a line  \
@@ -104,6 +105,7 @@ in [GitHub-flavoured markdown][github-mermaid]
 [MultiMarkdown]: http://fletcher.github.io/MultiMarkdown-4/syntax
 [github-mermaid]: https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/
 [mermaid]: https://github.com/mermaid-js/mermaid
+[github-tables]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables
 
 ## Motivation
 

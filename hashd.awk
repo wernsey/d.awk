@@ -24,6 +24,7 @@ BEGIN {
     if(Mermaid== "") Mermaid = 1;
     if(HideToCLevel== "") HideToCLevel = 3;
     if(Lang == "") Lang = "en";
+    if(Tables == "") Tables = 1;
     #TopLinks = 1;
     #classic_underscore = 1;
     if(MaxWidth=="") MaxWidth="1080px";
@@ -43,6 +44,8 @@ Single && $0 !~ /^#/ {
         while(ListLevel > 1)
             Buf = Buf "\n</" Open[ListLevel--] ">";
         Out = Out tag(Mode, Buf "\n");
+    } else if(Mode == "table") {
+        Out = Out end_table();
     } else {
         Buf = trim(scrub(Buf));
         if(Buf)
@@ -74,6 +77,8 @@ END {
         while(ListLevel > 1)
             Buf = Buf "\n</" Open[ListLevel--] ">";
         Out = Out tag(Mode, Buf "\n");
+    } else if(Mode == "table") {
+        Out = Out end_table();
     } else {
         Buf = trim(scrub(Buf));
         if(Buf)
@@ -143,7 +148,7 @@ function trim(st) {
     sub(/[[:space:]]+$/, "", st);
     return st;
 }
-function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plang, mmaid) {
+function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plang, mmaid, cols, i) {
     if(Mode == "p") {
         if(match(st, /^[[:space:]]*\[[-._[:alnum:][:space:]]+\]:/)) {
             linkdesc = ""; LastLink = 0;
@@ -218,7 +223,14 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
             if(Buf) res = tag("p", scrub(Buf));
             Buf = scrub(trim(substr(st, RSTART+RLENGTH)));
             push("blockquote");
-        } else if(match(st, /^[[:space:]]*([*+-]|[[:digit:]]+\.)[[:space:]]/)) {
+        } else if(Tables && match(st, /.*\|(.*\|)+/)) {
+            if(Buf) res = tag("p", scrub(Buf));
+            Row = 1;
+            for(i = 1; i <= MaxCols; i++)
+                Align[i] = "";
+            process_table_row(st);
+            push("table");
+		} else if(match(st, /^[[:space:]]*([*+-]|[[:digit:]]+\.)[[:space:]]/)) {
             if(Buf) res = tag("p", scrub(Buf));
             Buf="";
             match(st, /^[[:space:]]*/);
@@ -246,6 +258,14 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
             res = res filter(st);
         } else
             Buf = Buf st;
+    } else if(Mode == "table") {
+        if(match(st, /.*\|(.*\|)+/)) {
+            process_table_row(st);
+        } else {
+            res = end_table();
+            pop();
+            res = res filter(st);
+        }
     } else if(Mode == "pre") {
         if(!Preterm && match(st, /^((    )| *\t)/) || Preterm && !match(st, /^[[:space:]]*```+/))
             Buf = Buf ((Buf)?"\n":"") substr(st, RSTART+RLENGTH);
@@ -495,6 +515,52 @@ function heading(level, st,       res, href, u, text,svg) {
     ToCLevel = level;
     return res;
 }
+function process_table_row(st       ,cols, i) {
+    if(match(st, /^[[:space:]]*\|/))
+        st = substr(st, RSTART+RLENGTH);
+    if(match(st, /\|[[:space:]]*$/))
+        st = substr(st, 1, RSTART - 1);
+    st = trim(st);
+
+    if(match(st, /^([[:space:]:|]|---+)*$/)) {
+        IsHeaders[Row-1] = 1;
+        cols = split(st, A, /[[:space:]]*\|[[:space:]]*/)
+        for(i = 1; i <= cols; i++) {
+            if(match(A[i], /^:-*:$/))
+                Align[i] = "center";
+            else if(match(A[i], /^-*:$/))
+                Align[i] = "right";
+            else if(match(A[i], /^:-*$/))
+                Align[i] = "left";
+        }
+        return;
+    }
+
+    cols = split(st, A, /[[:space:]]*\|[[:space:]]*/);
+    for(i = 1; i <= cols; i++) {
+        Table[Row, i] = A[i];
+    }
+    NCols[Row] = cols;
+    if(cols > MaxCols)
+        MaxCols = cols;
+    IsHeaders[Row] = 0;
+    Row++;
+}
+function end_table(         r,c,t,a,s) {
+    for(r = 1; r < Row; r++) {
+        t = IsHeaders[r] ? "th" : "td"
+        s = s "<tr>"
+        for(c = 1; c <= NCols[r]; c++) {
+            a = Align[c];
+            if(a)
+                s = s "<" t " align=\"" a "\">" scrub(Table[r,c]) "</" t ">"
+            else
+                s = s "<" t ">" scrub(Table[r,c]) "</" t ">"
+        }
+        s = s "</tr>\n"
+    }
+    return tag("table", s, "class=\"da\"");
+}
 function make_toc(st,              r,p,dis,t,n) {
     if(!ToC) return st;
     for(;ToCLevel > 1;ToCLevel--)
@@ -688,6 +754,10 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
     css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
     css["th.dawk-ex"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
     css["tr.dawk-ex:nth-child(odd)"] = "background-color:%color5%;";
+    css["table.da"] = "border-collapse:collapse;margin:0.5em;";
+    css["table.da th,td"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
+    css["table.da th"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
+    css["table.da tr:nth-child(odd)"] = "background-color:%color5%;";
     css["div.dawk-ex"] = "padding:0.5em;";
     css["caption.dawk-ex"] = "padding:0.5em;font-style:italic;";
     css["dl.dawk-ex"] = "margin:0.5em;";

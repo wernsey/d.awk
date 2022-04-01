@@ -295,6 +295,40 @@
  * space followed by a \ at the end of a line force a line break. \
  * This is useful because I have the habit of trimming trailing spaces.
  *
+ * ### Tables
+ *
+ * Tables are supported using the same syntax as [GitHub flavoured markdown][github-tables].
+ *
+ * [github-tables]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables
+ *
+ * ```
+ * | Tables        | Are           | Cool  |
+ * | ------------- |:-------------:| -----:|
+ * | col 3 is      | right-aligned | $1600 |
+ * | col 2 is      | centered      |   $12 |
+ * | zebra stripes | are neat      |    $1 |
+ * ```
+ *
+ * | Tables        | Are           | Cool  |
+ * | ------------- |:-------------:| -----:|
+ * | col 3 is      | right-aligned | $1600 |
+ * | col 2 is      | centered      |   $12 |
+ * | zebra stripes | are neat      |    $1 |
+ *
+ * The columns need not be aligned:
+ *
+ * ```
+ * Markdown | Less | Pretty
+ * --- | --- | ---
+ * *Still* | `renders` | **nicely**
+ * 1 | 2 | 3
+ * ```
+ *
+ * Markdown | Less | Pretty
+ * --- | --- | ---
+ * *Still* | `renders` | **nicely**
+ * 1 | 2 | 3
+ *
  * Using HTML in Documents
  * -----------------------
  *
