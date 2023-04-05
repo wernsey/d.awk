@@ -1,6 +1,8 @@
 d.awk - Source code documentation script
 ========================================
 
+![GitHub](https://img.shields.io/github/license/wernsey/d.awk)
+
 Some [Awk][] scripts to generate documentation from [Markdown][]-formatted
 comments in source code.
 
@@ -76,6 +78,7 @@ It supports most of Markdown:
 * Code blocks and block quotes
 * Hyperlinks and images
 * A large number of HTML tags can be embedded in a document
+* The output has a dark mode toggle.
 
 It also supports a number of extensions, mostly based on GitHub syntax:
 * ```` ``` ````-style code blocks
@@ -312,12 +315,15 @@ Markdeep has significantly more features than `d.awk`, but the tradeoff is that 
 has some incompatibilities with GitHub-flavoured Markdown and it requires the
 `markdeep.js` file to be distributed with the documentation.
 
+There is also [TeXMe][texme] as an alternative to Markdeep.
+
 yiyus' [md2html.awk][] is an Awk script that generates HTML from Markdown with a much
 cleaner parser. I only discovered it long after I wrote my own Markdown parser.
 
 [stddoc.c]: https://github.com/r-lyeh/stddoc.c
 [md2html.awk]: https://github.com/yiyus/md2html.awk/blob/master/md2html.awk
 [Markdeep]: https://casual-effects.com/markdeep/
+[texme]: https://github.com/susam/texme
 
 ## TODO
 
@@ -329,3 +335,8 @@ Things I'd like to add in the future:
     Please upgrade mawk, or use Gawk instead.
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
+- GitHub's Markdown now supports [mathematical expressions][github-math]
+  through MathJax, so it might be worthwhile to support it in `d.awk` as well.
+
+[github-math]: https://github.blog/changelog/2022-05-19-render-mathematical-expressions-in-markdown/
+

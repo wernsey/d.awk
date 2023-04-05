@@ -63,7 +63,10 @@ END {
     if(StyleSheet)
         print "<link rel=\"stylesheet\" href=\"" StyleSheet "\">";
     else
-        print "<style><!--" CSS "\n--></style>";
+        print "<style><!--" CSS "\n" \
+        ".print-only {display:none}\n"\
+        "@media print { .no-print { display: none !important; } .print-only {display:block} }" \
+        "--></style>";
     if(ToC && match(Out, /!\[toc[-+]?\]/))
         print "<script><!--\n" \
             "function toggle_toc(n) {\n" \
@@ -82,6 +85,20 @@ END {
             "}\n" \
             "//-->\n</script>";
     print "</head><body>";
+
+    print "<a class=\"dark-toggle no-print\">\n" \
+        "<svg width=\"12\" height=\"12\" viewBox=\"0 0 12 20\" xmlns=\"http://www.w3.org/2000/svg\">\n" \
+            "<g transform=\"translate(8 12) scale(8 8)\">\n" \
+                "<path fill=\"var(--color)\" d=\"M 0.25 -1 C -0.5 -1 -1 -0.5 -1 0 C -1.02 0.5 -0.5 1 0.25 1 C 0 1 -0.5 0.5 -0.5 0 C -0.5 -0.5 0 -1 0.25 -1\"/>\n" \
+            "</g>\n" \
+        "</svg>\n&nbsp;Toggle Dark Mode</a>\n";
+    print "<script>\n"\
+    "const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n"\
+    "document.querySelector('.dark-toggle').addEventListener('click', function () {\n"\
+    "    document.body.classList.toggle(prefersDarkScheme.matches ? 'light-theme' : 'dark-theme');\n"\
+    "});\n"\
+    "</script>";
+
     if(Out) {
         Out = fix_footnotes(Out);
         Out = fix_links(Out);
@@ -474,10 +491,10 @@ function heading(level, st,       res, href, u, text,svg) {
     for(;ToCLevel < level; ToCLevel++) {
         ToC_ID++;
         if(ToCLevel < HideToCLevel) {
-            ToC = ToC "<a class=\"toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BC;</a>";
+            ToC = ToC "<a class=\"toc-button no-print\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BC;</a>";
             ToC = ToC "<ul class=\"toc toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
         } else {
-            ToC = ToC "<a class=\"toc toc-button\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BA;</a>";
+            ToC = ToC "<a class=\"toc toc-button no-print\" id=\"toc-btn-" ToC_ID "\" onclick=\"toggle_toc_ul('" ToC_ID "')\">&#x25BA;</a>";
             ToC = ToC "<ul style=\"display:none;\" class=\"toc toc-" ToCLevel "\" id=\"toc-ul-" ToC_ID "\">";
         }
     }
@@ -533,10 +550,13 @@ function end_table(         r,c,t,a,s) {
     }
     return tag("table", s, "class=\"da\"");
 }
-function make_toc(st,              r,p,dis,t,n) {
+function make_toc(st,              r,p,dis,t,n,tocBody) {
     if(!ToC) return st;
     for(;ToCLevel > 1;ToCLevel--)
         ToC = ToC "</ul>";
+
+    tocBody = "<ul class=\"toc toc-1\">" ToC "</ul>\n";
+
     p = match(st, /!\[toc[-+]?\]/);
     while(p) {
         if(substr(st,RSTART-1,1) == "\\") {
@@ -548,8 +568,9 @@ function make_toc(st,              r,p,dis,t,n) {
 
         ++n;
         dis = index(substr(st,RSTART,RLENGTH),"+");
-        t = "<div>\n<a id=\"toc-button-" n "\" class=\"toc-button\" onclick=\"toggle_toc(" n ")\"><span id=\"btn-text-" n "\">" (dis?"&#x25BC;":"&#x25BA;") "</span>&nbsp;Contents</a>\n" \
-            "<div id=\"table-of-contents-" n "\" style=\"display:" (dis?"block":"none") ";\">\n<ul class=\"toc toc-1\">" ToC "</ul>\n</div>\n</div>";
+        t = "<details id=\"table-of-contents\" class=\"no-print\">\n<summary id=\"toc-button-" n "\" class=\"toc-button\">Contents</summary>\n" \
+            tocBody "</details>";
+        t = t "\n<div class=\"print-only\">" tocBody "</div>"
         r = r substr(st,1,RSTART-1);
         r = r t;
         st = substr(st,RSTART+RLENGTH);
@@ -693,61 +714,70 @@ function obfuscate(e,     r,i,t,o) {
     }
     return o;
 }
-function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff,fs,i) {
+function init_css(Theme,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
     if(Theme == "0") return "";
 
-    css["body"] = "color:%color1%;font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
+    css["body"] = "color:var(--color);background:var(--background);font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
                 "padding:1em 2em;width:80%;max-width:%maxwidth%;margin:0 auto;min-height:100%;float:none;";
-    css["h1"] = "border-bottom:1px solid %color1%;padding:0.3em 0.1em;";
-    css["h1 a"] = "color:%color1%;";
-    css["h2"] = "color:%color2%;border-bottom:1px solid %color2%;padding:0.2em 0.1em;";
-    css["h2 a"] = "color:%color2%;";
-    css["h3"] = "color:%color3%;border-bottom:1px solid %color3%;padding:0.1em 0.1em;";
-    css["h3 a"] = "color:%color3%;";
+    css["h1"] = "border-bottom:1px solid var(--heading);padding:0.3em 0.1em;";
+    css["h1 a"] = "color:var(--heading);";
+    css["h2"] = "color:var(--heading);border-bottom:1px solid var(--heading);padding:0.2em 0.1em;";
+    css["h2 a"] = "color:var(--heading);";
+    css["h3"] = "color:var(--heading);border-bottom:1px solid var(--heading);padding:0.1em 0.1em;";
+    css["h3 a"] = "color:var(--heading);";
     css["h4,h5,h6"] = "padding:0.1em 0.1em;";
-    css["h4 a,h5 a,h6 a"] = "color:%color4%;";
+    css["h4 a,h5 a,h6 a"] = "color:var(--heading);";
     css["h1,h2,h3,h4,h5,h6"] = "font-weight:bolder;line-height:1.2em;";
-    css["h4"] = "border-bottom:1px solid %color4%";
+    css["h4"] = "border-bottom:1px solid var(--heading)";
     css["p"] = "margin:0.5em 0.1em;"
-    css["hr"] = "background:%color1%;height:1px;border:0;"
-    css["a.normal, a.toc"] = "color:%color2%;";
-    #css["a.normal:visited"] = "color:%color2%;";
-    #css["a.normal:active"] = "color:%color4%;";
-    css["a.normal:hover, a.toc:hover"] = "color:%color4%;";
+    css["hr"] = "background:var(--color);height:1px;border:0;"
+    css["a.normal, a.toc"] = "color:var(--alt-color);";
+    #css["a.normal:visited"] = "color:var(--heading);";
+    #css["a.normal:active"] = "color:var(--heading);";
+    css["a.normal:hover, a.toc:hover"] = "color:var(--alt-color);";
     css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;";
     css["a.header svg"] = "opacity:0;";
     css["a.header:hover svg"] = "opacity:1;";
     css["a.header"] = "text-decoration: none;";
-    css["strong,b"] = "color:%color1%";
-    css["code"] = "color:%color2%;font-weight:bold;";
-    css["blockquote"] = "margin-left:1em;color:%color2%;border-left:0.2em solid %color3%;padding:0.25em 0.5em;overflow-x:auto;";
-    css["pre"] = "color:%color2%;background:%color5%;border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
+    css["a.dark-toggle"] = "float:right; cursor: pointer; font-size: small; padding: 0.3em 0.5em 0.5em 0.5em; font-family: monospace; border-radius: 3px;";
+    css["a.dark-toggle:hover"] = "background:var(--alt-background);";
+    css[".toc-button"] = "color:var(--alt-color);cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
+    css["a.toc-button:hover"] = "background:var(--alt-background);";
+    css["a.footnote"] = "font-size:smaller;text-decoration:initial;";
+    css["a.footnote-back"] = "text-decoration:initial;font-size:x-small;";
+    css["strong,b"] = "color:var(--color)";
+    css["code"] = "color:var(--alt-color);font-weight:bold;";
+    css["blockquote"] = "margin-left:1em;color:var(--alt-color);border-left:0.2em solid var(--alt-color);padding:0.25em 0.5em;overflow-x:auto;";
+    css["pre"] = "color:var(--alt-color);background:var(--alt-background);border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
     css["table.dawk-ex"] = "border-collapse:collapse;margin:0.5em;";
-    css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
-    css["th.dawk-ex"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
-    css["tr.dawk-ex:nth-child(odd)"] = "background-color:%color5%;";
+    css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid var(--heading);";
+    css["th.dawk-ex"] = "color:var(--heading);border:1px solid var(--heading);border-bottom:2px solid var(--heading);";
+    css["tr.dawk-ex:nth-child(odd)"] = "background-color:var(--alt-background);";
     css["table.da"] = "border-collapse:collapse;margin:0.5em;";
-    css["table.da th,td"] = "padding:0.5em 0.75em;border:1px solid %color4%;";
-    css["table.da th"] = "color:%color2%;border:1px solid %color3%;border-bottom:2px solid %color3%;";
-    css["table.da tr:nth-child(odd)"] = "background-color:%color5%;";
+    css["table.da th,td"] = "padding:0.5em 0.75em;border:1px solid var(--heading);";
+    css["table.da th"] = "color:var(--heading);border:1px solid var(--heading);border-bottom:2px solid var(--heading);";
+    css["table.da tr:nth-child(odd)"] = "background-color:var(--alt-background);";
     css["div.dawk-ex"] = "padding:0.5em;";
     css["caption.dawk-ex"] = "padding:0.5em;font-style:italic;";
     css["dl.dawk-ex"] = "margin:0.5em;";
     css["dt.dawk-ex"] = "font-weight:bold;";
     css["dd.dawk-ex"] = "padding:0.3em;";
-    css["mark.dawk-ex"] = "color:%color5%;background-color:%color4%;";
-    css["del.dawk-ex,s.dawk-ex"] = "color:%color4%;";
-    css["a.toc-button"] = "color:%color2%;cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
-    css["a.toc-button:hover"] = "color:%color4%;background:%color5%;";
+    css["mark.dawk-ex"] = "color:var(--alt-background);background-color:var(--heading);";
+    css["del.dawk-ex,s.dawk-ex"] = "color:var(--heading);";
     css["div#table-of-contents"] = "padding:0;font-size:smaller;";
     css["abbr"] = "cursor:help;";
-    css["ol.footnotes"] = "font-size:small;color:%color4%";
-    css["a.footnote"] = "font-size:smaller;text-decoration:initial;";
-    css["a.footnote-back"] = "text-decoration:initial;font-size:x-small;";
-    css[".fade"] = "color:%color5%;";
-    css[".highlight"] = "color:%color2%;background-color:%color5%;";
+    css["ol.footnotes"] = "font-size:small;color:var(--alt-color)";
+    css[".fade"] = "color:var(--alt-background);";
+    css[".highlight"] = "color:var(--alt-color);background-color:var(--alt-background);";
     css["summary"] = "cursor:pointer;";
     css["ul.toc"] = "list-style-type:none;";
+
+    # This is a trick to prevent page-breaks immediately after headers
+    # https://stackoverflow.com/a/53742871/115589
+    css["blockquote,code,pre,table"] = "break-inside: avoid;break-before: auto;"
+    css["section"] = "break-inside: avoid;break-before: auto;"
+    css["h1,h2,h3,h4"] = "break-inside: avoid;";
+    css["h1::after,h2::after,h3::after,h4::after"] = "content: \"\";display: block;height: 200px;margin-bottom: -200px;";
 
     if(NumberHeadings)  {
         if(NumberH1s) {
@@ -785,33 +815,27 @@ function init_css(Theme,             css,ss,hr,c1,c2,c3,c4,c5,bg1,bg2,bg3,bg4,ff
         }
     }
 
-    # Colors:
-    #c1="#314070";c2="#465DA6";c3="#6676A8";c4="#A88C3F";c5="#E8E4D9";
-    c1="#314070";c2="#384877";c3="#6676A8";c4="#738FD0";c5="#FBFCFF";
     # Font Family:
     ff = "sans-serif";
     fs = "11pt";
 
-    # Alternative color scheme suggestions:
-    #c1="#303F9F";c2="#0449CC";c3="#2162FA";c4="#4B80FB";c5="#EDF2FF";
-    #ff="\"Trebuchet MS\", Helvetica, sans-serif";
-    #c1="#430005";c2="#740009";c3="#A6373F";c4="#c55158";c5="#fbf2f2";
-    #ff="Verdana, Geneva, sans-serif";
-    #c1="#083900";c2="#0D6300";c3="#3C8D2F";c4="#50be3f";c5="#f2faf1";
-    #ff="Georgia, serif";
-    #c1="#35305D";c2="#646379";c3="#7A74A5";c4="#646392";c5="#fafafa";
-
     for(i = 0; i<=255; i++)_hex[sprintf("%02X",i)]=i;
+
+    lt = "{--color: #263053; --alt-color: #16174c; --heading: #2A437E; --background: #FDFDFD; --alt-background: #F9FAFF;}";
+    dt = "{--color: #E9ECFF; --alt-color: #9DAFE6; --heading: #6C89E8; --background: #13192B; --alt-background: #232A42;}";
+
+    ss = ss "\nbody " lt;
+    ss = ss "\nbody.dark-theme " dt;
+    ss = ss "\n@media (prefers-color-scheme: dark) {"
+    ss = ss "\n  body " dt;
+    ss = ss "\n  body.light-theme " lt;
+    ss = ss "\n}"
     for(k in css)
         ss = ss "\n" k "{" css[k] "}";
     gsub(/%maxwidth%/,MaxWidth,ss);
-    gsub(/%color1%/,c1,ss);
-    gsub(/%color2%/,c2,ss);
-    gsub(/%color3%/,c3,ss);
-    gsub(/%color4%/,c4,ss);
-    gsub(/%color5%/,c5,ss);
     gsub(/%font-family%/,ff,ss);
     gsub(/%font-size%/,fs,ss);
     gsub(/%hr%/,hr,ss);
+
     return ss;
 }
