@@ -71,7 +71,7 @@
  *  1. Item 2
  *         * Item 2.1; List styles can be mixed.
  *         * Item 2.2
- *
+ *           
  *           The blank line above contains whitespace, hence a new list is not started
  *           (Paragraphs in lists differ a bit from other markdowns).  \
  *           (If this text is in a code block, it probably means I've trimmed trailing whitespace again)
@@ -124,7 +124,7 @@
  *
  * Code indented with spaces:
  *    //Some code, indented with spaces
- *
+ *    
  *    int main(int argc, char *argv[]) {
  *        return 0;
  *    }
@@ -165,7 +165,7 @@
  *
  *     # Compile like so:
  *     mvn package
- *
+ *     
  *     # Generate Javadocs
  *     mvn javadoc:javadoc
  *
