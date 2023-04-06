@@ -143,6 +143,9 @@ advantages:
 
 ## Usage
 
+The included [Makefile](Makefile) demonstrates what the different scripts in
+the repository are and how they're meant to be used.
+
 ### d.awk
 
 Comments must start with `/**`, and each line in the comment must start with a
@@ -347,3 +350,8 @@ Things I'd like to add in the future:
     Please upgrade mawk, or use Gawk instead.
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
+- Google's [code-prettify][] library is no longer maintained. I've been
+    looking towards [highlightjs][] as an alternative, but haven't made
+    a decision yet.
+
+[highlightjs]: https://highlightjs.org/

@@ -41,7 +41,7 @@
 # - `-vNumberH1s=1`: if `NumberHeadings` is enabled, `<H1>` headings are not numbered by
 #        default (because the `<H1>` would typically contain the document title). Use this to
 #        number `<H1>`s as well.
-# - `-v Clean=1` to treat the input file as a plain Markdown file.
+# - `-vClean=1` to treat the input file as a plain Markdown file.
 #        You could use `./d.awk -vClean=1 README.md > README.html` to generate HTML from
 #        your README, for example.
 #
