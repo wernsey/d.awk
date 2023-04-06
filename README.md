@@ -262,14 +262,18 @@ To specify a different width, use `-v Width=60` from the command line.
 
 ## License
 
-The license is officially the MIT license (see the file [LICENSE](LICENSE) for
-details), but the individual files may be redistributed with this notice:
+The license is officially the MIT-0 license (see the file [LICENSE](LICENSE) for
+details), but the individual scripts may be redistributed with this notice:
 
     (c) 2016-2023 Werner Stoop
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright
     notice and this notice are preserved. This file is offered as-is,
     without any warranty.
+
+The reasoning is that if you're just using one of the scripts in this repository
+to create documentation for your projects then I'd like for you to be able to
+include the script in your project without worries.
 
 ## References
 
