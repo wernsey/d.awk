@@ -84,14 +84,18 @@ It also supports a number of extensions, mostly based on GitHub syntax:
 * ```` ``` ````-style code blocks
   * You can specify a language according to Github's [Syntax Highlighting][github-syntax]
     rules, for example ```` ```java ````
-  * It uses Google's [code-prettify][] library for the syntax highlighting.
-  * This pulls in a third-party script. It can be disabled by specifying
-    `-vPretty=0` on the command line.
+    * It uses Google's [code-prettify][] library for the syntax highlighting.
+    * This causes the generated HTML to pull in a third-party script.
+      It can be disabled by specifying `-vPretty=0` on the command line.
 * Tables, using the same syntax as [GitHub-flavoured markdown][github-tables].
 * [Mermaid][mermaid] diagrams are supported through the same ```` ```mermaid ```` syntax as
   in [GitHub-flavoured markdown][github-mermaid]
-  * This pulls in a third-party script. It can be disabled by specifying
-    `-vMermaid=0` on the command line.
+  * This causes the generated HTML to pull in a third-party script.
+    It can be disabled by specifying `-vMermaid=0` on the command line.
+* [MathJax][MathJax] support for rendering mathematical expressions, using the same sytax
+  as [GitHub-flavoured markdown][github-math].
+  * This causes the generated HTML to pull in a third-party script.
+    It can be disabled by specifying `-vMathjax=0` on the command line.
 * `[x]` GitHub-style task lists
 * [MultiMarkdown][]-style footnotes and abbreviations.
 * Backslash at the end of a line  \
@@ -108,6 +112,8 @@ and test at the same time.
 [MultiMarkdown]: http://fletcher.github.io/MultiMarkdown-4/syntax
 [github-mermaid]: https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/
 [mermaid]: https://github.com/mermaid-js/mermaid
+[MathJax]: https://www.mathjax.org/
+[github-math]: https://github.blog/changelog/2022-05-19-render-mathematical-expressions-in-markdown/
 [github-tables]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables
 
 ## Motivation
@@ -163,7 +169,8 @@ features and the supported syntax.
 Configuration options can be set in the `BEGIN` block of the script, or passed
 to the script through Awk's `-v` command-line option:
 - `-v Title="My Document Title"` to set the `<title/>` of the HTML
-- `-v Clean=1` to treat the input file as a normal Markdown file.
+- `-v Clean=1` to treat the input file as a normal Markdown file. Use this option
+  to create HTML documents from your project's README.md and related files.
 - `-v StyleSheet=style.css` to use a separate file as style sheet.
 - `-v TopLinks=1` to have links to the top of the document next to headers.
 - `-v Pretty=0` disable syntax highlighting.  \
@@ -171,6 +178,7 @@ to the script through Awk's `-v` command-line option:
   Google's [code-prettify][] library to syntax highlight the block in the language `lang`.  \
   This switch disables that functionality.
 - `-vMermaid=0` disable [Mermaid][] diagrams.
+- `-vMathjax=0` disable [MathJax][] mathematical expression rendering.
 - `-v HideToCLevel=n` specifies the level of the Table of Contents that should
   be collapsed by default. For example, a value of 3 means that headers above
   level 3 will be collapsed in the Table of Contents initially.
@@ -257,7 +265,7 @@ To specify a different width, use `-v Width=60` from the command line.
 The license is officially the MIT license (see the file [LICENSE](LICENSE) for
 details), but the individual files may be redistributed with this notice:
 
-    (c) 2016 Werner Stoop
+    (c) 2016-2023 Werner Stoop
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright
     notice and this notice are preserved. This file is offered as-is,
@@ -335,8 +343,3 @@ Things I'd like to add in the future:
     Please upgrade mawk, or use Gawk instead.
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
-- GitHub's Markdown now supports [mathematical expressions][github-math]
-  through MathJax, so it might be worthwhile to support it in `d.awk` as well.
-
-[github-math]: https://github.blog/changelog/2022-05-19-render-mathematical-expressions-in-markdown/
-

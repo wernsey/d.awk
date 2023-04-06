@@ -13,9 +13,12 @@ BEGIN {
 
     # Configuration options
     if(Title== "") Title = "Documentation";
-    if(Theme== "") Theme = 1;
+    if(Css== "") Css = 1;
+
     if(Pretty== "") Pretty = 1;
     if(Mermaid== "") Mermaid = 1;
+    if(Mathjax=="") Mathjax = 1;
+
     if(HideToCLevel== "") HideToCLevel = 3;
     if(Lang == "") Lang = "en";
     if(Tables == "") Tables = 1;
@@ -27,7 +30,7 @@ BEGIN {
 
     Mode = "p";
     ToC = ""; ToCLevel = 1;
-    CSS = init_css(Theme);
+    CSS = init_css(Css);
     for(i = 0; i < 128; i++)
         _ord[sprintf("%c", i)] = i;
     srand();
@@ -118,6 +121,10 @@ END {
     if(Mermaid && HasMermaid) {
         print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
         print "<script>mermaid.initialize({ startOnLoad: true });</script>";
+    }
+    if(Mathjax && HasMathjax) {
+        print "<script>MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]},svg:{fontCache:'global'}};</script>";
+        print "<script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\" type=\"text/javascript\" id=\"MathJax-script\" async></script>";
     }
     print "</body></html>"
 }
@@ -322,11 +329,11 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
     Prev = st;
     return res;
 }
-function scrub(st,    mp, ms, me, r, p, tg, a) {
+function scrub(st,    mp, ms, me, r, p, tg, a, tok) {
     sub(/  $/,"<br>\n",st);
     gsub(/(  |[[:space:]]+\\)\n/,"<br>\n",st);
     gsub(/(  |[[:space:]]+\\)$/,"<br>\n",st);
-    while(match(st, /(__?|\*\*?|~~|`+|[&><\\])/)) {
+    while(match(st, /(__?|\*\*?|~~|`+|\$+|\\\(|[&><\\])/)) {
         a = substr(st, 1, RSTART-1);
         mp = substr(st, RSTART, RLENGTH);
         ms = substr(st, RSTART-1,1);
@@ -416,6 +423,27 @@ function scrub(st,    mp, ms, me, r, p, tg, a) {
             ms = substr(st,1,p-1);
             r = r itag("code", escape(ms));
             st = substr(st,p+length(mp));
+        } else if(Mathjax && match(mp, /\$+/)) {
+            tok = substr(mp, RSTART, RLENGTH);
+            p = index(st, mp);
+            if(!p) {
+                r = r mp;
+                continue;
+            }
+            ms = substr(st,1,p-1);
+            r = r tok escape(ms) tok;
+            st = substr(st,p+length(mp));
+            HasMathjax = 1;
+        } else if(Mathjax && mp=="\\(") {
+            p = index(st, "\\)");
+            if(!p) {
+                r = r mp;
+                continue;
+            }
+            ms = substr(st,1,p-1);
+            r = r "\\(" escape(ms) "\\)";
+            st = substr(st,p+length(mp));
+            HasMathjax = 1;
         } else if(mp == ">") {
             r = r "&gt;";
         } else if(mp == "<") {
@@ -714,8 +742,8 @@ function obfuscate(e,     r,i,t,o) {
     }
     return o;
 }
-function init_css(Theme,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
-    if(Theme == "0") return "";
+function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
+    if(Css == "0") return "";
 
     css["body"] = "color:var(--color);background:var(--background);font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
                 "padding:1em 2em;width:80%;max-width:%maxwidth%;margin:0 auto;min-height:100%;float:none;";
@@ -821,7 +849,9 @@ function init_css(Theme,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
 
     for(i = 0; i<=255; i++)_hex[sprintf("%02X",i)]=i;
 
+    # Light theme colors:
     lt = "{--color: #263053; --alt-color: #16174c; --heading: #2A437E; --background: #FDFDFD; --alt-background: #F9FAFF;}";
+    # Dark theme colors:
     dt = "{--color: #E9ECFF; --alt-color: #9DAFE6; --heading: #6C89E8; --background: #13192B; --alt-background: #232A42;}";
 
     ss = ss "\nbody " lt;

@@ -17,7 +17,7 @@
  *
  * Blank lines in the comment separate paragraphs.
  *
- * Two spaces at the end of the line  
+ * Two spaces at the end of the line
  * forces a linebreak. Here is another line<br>break.
  *
  * Headings can be written like so:
@@ -66,12 +66,12 @@
  *       1. Item 1.1
  *          1981\. This line started with a number.
  *       1. Item 1.2;
- *          This item consists of multiple lines  
+ *          This item consists of multiple lines
  *          with a forced line break (two spaces at the end of the last line).
  *  1. Item 2
  *         * Item 2.1; List styles can be mixed.
  *         * Item 2.2
- *           
+ *
  *           The blank line above contains whitespace, hence a new list is not started
  *           (Paragraphs in lists differ a bit from other markdowns).  \
  *           (If this text is in a code block, it probably means I've trimmed trailing whitespace again)
@@ -124,7 +124,7 @@
  *
  * Code indented with spaces:
  *    //Some code, indented with spaces
- *    
+ *
  *    int main(int argc, char *argv[]) {
  *        return 0;
  *    }
@@ -165,7 +165,7 @@
  *
  *     # Compile like so:
  *     mvn package
- *     
+ *
  *     # Generate Javadocs
  *     mvn javadoc:javadoc
  *
@@ -186,6 +186,8 @@
  *                     |        |
  *                     +--------+
  *
+ * ### Mermaid diagrams
+ *
  * [Mermaid][] diagrams:
  *
  * ```mermaid
@@ -199,6 +201,28 @@
  * You can specify `-vMermaid=0` on the command line to disable this functionality.
  *
  * [Mermaid]: https://github.com/mermaid-js/mermaid
+ *
+ * ### MathJax
+ *
+ * [MathJax][mathjax] is now supported, using the same syntax as [GitHub's markdown][github-mathjax].
+ *
+ * Inline equation with `$` delimiters:  $\sqrt{3x-1}+(1+x)^2$
+ *
+ * Equation all by itself:
+ *
+ * $$\left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right)$$
+ *
+ * Equation with a character that needs to be escaped:
+ *
+ * $$ A + 5 < B $$
+ *
+ * You should also be able to handle the `\( ... \)` syntax:
+ * \( \left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right) \)
+ *
+ * [mathjax]: https://www.mathjax.org/
+ * [github-mathjax]: https://github.blog/changelog/2022-05-19-render-mathematical-expressions-in-markdown/
+ *
+ *
  *
  * Hyperlinks
  * ----------

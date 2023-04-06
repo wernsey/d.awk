@@ -25,11 +25,12 @@
 #
 # - `-vTitle="My Document Title"` to set the `<title/>` in the `<head/>` section of the HTML
 # - `-vStyleSheet=style.css` to use a separate CSS file as style sheet.
-# - `-vTheme=n` with n either 0 to disable CSS or 1 to enable; Default = 1
+# - `-vCss=n` with n either 0 to disable CSS or 1 to enable; Default = 1
 # - `-vTopLinks=1` to have links to the top of the doc next to headers.
 # - `-vMaxWidth=1080px` specifies the Maximum width of the HTML output.
 # - `-vPretty=0` disable syntax highlighting with Google's [code prettify][].
 # - `-vMermaid=0` disable [Mermaid][] diagrams.
+# - `-vMathjax=0` disable [MathJax][] mathematical rendering.
 # - `-vHideToCLevel=n` specifies the level of the ToC that should be collapsed by default.
 # - `-vLang=n` specifies the value of the `lang` attribute of the <html> tag; Default = "en"
 # - `-vTables=0` disables support for [GitHub-style tables][github-tables]
@@ -40,6 +41,9 @@
 # - `-vNumberH1s=1`: if `NumberHeadings` is enabled, `<H1>` headings are not numbered by
 #        default (because the `<H1>` would typically contain the document title). Use this to
 #        number `<H1>`s as well.
+# - `-v Clean=1` to treat the input file as a plain Markdown file.
+#        You could use `./d.awk -vClean=1 README.md > README.html` to generate HTML from
+#        your README, for example.
 #
 # I've tested it with Gawk, Nawk and Mawk.
 # Gawk and Nawk worked without issues, but don't use the `-W compat`
@@ -48,7 +52,10 @@
 #
 # [code prettify]: https://github.com/google/code-prettify
 # [Mermaid]: https://github.com/mermaid-js/mermaid
+# [MathJax]: https://www.mathjax.org/
 # [github-tables]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables
+# [github-mermaid]: https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/
+# [github-math]: https://github.blog/changelog/2022-05-19-render-mathematical-expressions-in-markdown/
 #
 # ## Extensions
 #
@@ -59,6 +66,8 @@
 # - Github-style ```` ``` ```` code blocks supported.
 # - Github-style `~~strikethrough~~` supported.
 # - [Github-style tables][github-tables] are supported.
+# - [GitHub-style Mermaid diagrams][github-mermaid]
+# - [GitHub-style mathematical expressions][github-math]: $\sqrt{3x-1}+(1+x)^2$
 # - GitHub-style task lists `- [x]` are supported for documenting bugs and todo lists in code.
 # - The `id` attribute of anchor tags `<a>` are treated as in GitHub:
 #   The tag's id should be the title, in lower case stripped of non-alphanumeric characters
@@ -92,7 +101,7 @@
 #
 # ## License
 #
-#     (c) 2016 Werner Stoop
+#     (c) 2016-2023 Werner Stoop
 #     Copying and distribution of this file, with or without modification,
 #     are permitted in any medium without royalty provided the copyright
 #     notice and this notice are preserved. This file is offered as-is,
@@ -103,9 +112,12 @@ BEGIN {
 
     # Configuration options
     if(Title== "") Title = "Documentation";
-    if(Theme== "") Theme = 1;
+    if(Css== "") Css = 1;
+
     if(Pretty== "") Pretty = 1;
     if(Mermaid== "") Mermaid = 1;
+    if(Mathjax=="") Mathjax = 1;
+
     if(HideToCLevel== "") HideToCLevel = 3;
     if(Lang == "") Lang = "en";
     if(Tables == "") Tables = 1;
@@ -117,7 +129,7 @@ BEGIN {
 
     Mode = (Clean)?"p":"none";
     ToC = ""; ToCLevel = 1;
-    CSS = init_css(Theme);
+    CSS = init_css(Css);
     for(i = 0; i < 128; i++)
         _ord[sprintf("%c", i)] = i;
     srand();
@@ -276,6 +288,10 @@ END {
     if(Mermaid && HasMermaid) {
         print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
         print "<script>mermaid.initialize({ startOnLoad: true });</script>";
+    }
+    if(Mathjax && HasMathjax) {
+        print "<script>MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]},svg:{fontCache:'global'}};</script>";
+        print "<script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\" type=\"text/javascript\" id=\"MathJax-script\" async></script>";
     }
     print "</body></html>"
 }
@@ -480,11 +496,11 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
     Prev = st;
     return res;
 }
-function scrub(st,    mp, ms, me, r, p, tg, a) {
+function scrub(st,    mp, ms, me, r, p, tg, a, tok) {
     sub(/  $/,"<br>\n",st);
     gsub(/(  |[[:space:]]+\\)\n/,"<br>\n",st);
     gsub(/(  |[[:space:]]+\\)$/,"<br>\n",st);
-    while(match(st, /(__?|\*\*?|~~|`+|[&><\\])/)) {
+    while(match(st, /(__?|\*\*?|~~|`+|\$+|\\\(|[&><\\])/)) {
         a = substr(st, 1, RSTART-1);
         mp = substr(st, RSTART, RLENGTH);
         ms = substr(st, RSTART-1,1);
@@ -574,6 +590,27 @@ function scrub(st,    mp, ms, me, r, p, tg, a) {
             ms = substr(st,1,p-1);
             r = r itag("code", escape(ms));
             st = substr(st,p+length(mp));
+        } else if(Mathjax && match(mp, /\$+/)) {
+            tok = substr(mp, RSTART, RLENGTH);
+            p = index(st, mp);
+            if(!p) {
+                r = r mp;
+                continue;
+            }
+            ms = substr(st,1,p-1);
+            r = r tok escape(ms) tok;
+            st = substr(st,p+length(mp));
+            HasMathjax = 1;
+        } else if(Mathjax && mp=="\\(") {
+            p = index(st, "\\)");
+            if(!p) {
+                r = r mp;
+                continue;
+            }
+            ms = substr(st,1,p-1);
+            r = r "\\(" escape(ms) "\\)";
+            st = substr(st,p+length(mp));
+            HasMathjax = 1;
         } else if(mp == ">") {
             r = r "&gt;";
         } else if(mp == "<") {
@@ -872,8 +909,8 @@ function obfuscate(e,     r,i,t,o) {
     }
     return o;
 }
-function init_css(Theme,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
-    if(Theme == "0") return "";
+function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
+    if(Css == "0") return "";
 
     css["body"] = "color:var(--color);background:var(--background);font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
                 "padding:1em 2em;width:80%;max-width:%maxwidth%;margin:0 auto;min-height:100%;float:none;";
@@ -979,7 +1016,9 @@ function init_css(Theme,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
 
     for(i = 0; i<=255; i++)_hex[sprintf("%02X",i)]=i;
 
+    # Light theme colors:
     lt = "{--color: #263053; --alt-color: #16174c; --heading: #2A437E; --background: #FDFDFD; --alt-background: #F9FAFF;}";
+    # Dark theme colors:
     dt = "{--color: #E9ECFF; --alt-color: #9DAFE6; --heading: #6C89E8; --background: #13192B; --alt-background: #232A42;}";
 
     ss = ss "\nbody " lt;
