@@ -353,5 +353,7 @@ Things I'd like to add in the future:
 - Google's [code-prettify][] library is no longer maintained. I've been
     looking towards [highlightjs][] as an alternative, but haven't made
     a decision yet.
+- The Mermaid styles doesn't change if dark-mode is toggled, but it turned
+    out to be surprisingly difficult.
 
 [highlightjs]: https://highlightjs.org/

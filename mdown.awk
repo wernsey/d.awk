@@ -65,11 +65,31 @@ END {
     print "<title>" Title "</title>";
     if(StyleSheet)
         print "<link rel=\"stylesheet\" href=\"" StyleSheet "\">";
-    else
+    else {
+        if(Pretty && HasPretty) {
+            CSS = CSS "\nbody {--str:#a636d8;--kwd:#4646ff;--com:#56a656;--lit:#e05e10;--typ:#0222ce;--pun:#595959;}\n"\
+                "body.dark-theme {--str:#eb28df;--kwd:#f7d689;--com:#267b26;--lit: #ff8181;--typ:#228dff;--pun: #EEE;}\n"\
+                "@media (prefers-color-scheme: dark) {\n"\
+                "    body.light-theme {--str:#a636d8;--kwd:#4646ff;--com:#56a656;--lit:#e05e10;--typ:#0222ce;--pun:#595959;}\n"\
+                "    body {--str:#eb28df;--kwd:#f7d689;--com:#267b26;--lit: #ff8181;--typ:#228dff;--pun: #EEE;}\n"\
+                "}\n"\
+                ".com { color:var(--com); } /* comment */\n"\
+                ".kwd, .tag { color:var(--kwd); } /* keyword, markup tag */\n"\
+                ".typ, .atn { color:var(--typ); } /* type name, html/xml attribute name */\n"\
+                ".str, .atv { color:var(--str); } /* string literal, html/xml attribute value */\n"\
+                ".lit, .dec, .var { color:var(--lit); } /* literal */\n"\
+                ".pun, .opn, .clo { color:var(--pun); } /* punctuation */\n"\
+                ".pln { color:var(--alt-color); } /* plain text */\n"\
+                "@media print, projection {\n"\
+                "    .com { font-style: italic }\n"\
+                "    .kwd, .typ, .tag { font-weight: bold }\n"\
+                "}";
+        }
         print "<style><!--" CSS "\n" \
         ".print-only {display:none}\n"\
-        "@media print { .no-print { display: none !important; } .print-only {display:block} }" \
+        "@media print { .no-print { display: none !important; } .print-only {display:block} }\n" \
         "--></style>";
+    }
     if(ToC && match(Out, /!\[toc[-+]?\]/))
         print "<script><!--\n" \
             "function toggle_toc(n) {\n" \
@@ -87,7 +107,7 @@ END {
             "    }\n" \
             "}\n" \
             "//-->\n</script>";
-    print "</head><body>";
+    print "</head><body onload=\"PR.prettyPrint()\">";
 
     print "<a class=\"dark-toggle no-print\">\n" \
         "<svg width=\"12\" height=\"12\" viewBox=\"0 0 12 20\" xmlns=\"http://www.w3.org/2000/svg\">\n" \
@@ -116,11 +136,11 @@ END {
     }
 
     if(Pretty && HasPretty) {
-        print "<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js\"></script>";
+        print "<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/prettify.js\"></script>";
     }
     if(Mermaid && HasMermaid) {
         print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
-        print "<script>mermaid.initialize({ startOnLoad: true });</script>";
+        print "<script>mermaid.initialize({ startOnLoad: true, theme:window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default'  });</script>";
     }
     if(Mathjax && HasMathjax) {
         print "<script>MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]},svg:{fontCache:'global'}};</script>";
