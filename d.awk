@@ -133,6 +133,9 @@ BEGIN {
     for(i = 0; i < 128; i++)
         _ord[sprintf("%c", i)] = i;
     srand();
+	
+	# Allowed HTML tags:
+	HTML_tags = "^/?(a|abbr|b|blockquote|br|caption|cite|code|col|colgroup|column|dd|del|details|div|dl|dt|em|figcaption|figure|hr|i|img|ins|li|mark|ol|p|pre|q|s|samp|small|span|strong|sub|summary|sup|table|tbody|td|tfoot|th|thead|tr|u|ul|var)$";
 }
 
 !Clean && !Multi && /\/\*\*/    {
@@ -647,7 +650,7 @@ function scrub(st,    mp, ms, me, r, p, tg, a, tok) {
             } else
                 a = "";
 
-            if(match(tolower(tg), "^/?(a|abbr|div|span|blockquote|pre|img|code|p|em|strong|sup|sub|del|ins|s|u|b|i|br|hr|ul|ol|li|table|thead|tfoot|tbody|tr|th|td|caption|column|col|colgroup|figure|figcaption|dl|dd|dt|mark|cite|q|var|samp|small|details|summary)$")) {
+            if(match(tolower(tg), HTML_tags)) {
                 if(!match(tg, /\//)) {
                     if(match(a, /class="/)) {
                         sub(/class="/, "class=\"dawk-ex ", a);

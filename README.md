@@ -342,7 +342,7 @@ cleaner parser. I only discovered it long after I wrote my own Markdown parser.
 
 ## TODO
 
-Things I'd like to add in the future:
+Things I'd like to add/fix in the future:
 
 - `wrap.awk` adds too much whitespace to code blocks...
 - [ ] It is known to not work with versions of **mawk** prior to 1.3.4  \
@@ -351,9 +351,10 @@ Things I'd like to add in the future:
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
 - Google's [code-prettify][] library is no longer maintained. I've been
-    looking towards [highlightjs][] as an alternative, but haven't made
-    a decision yet.
+    looking towards [highlightjs][] and [syntaxhighlighter][] as alternatives, 
+	but haven't made a decision yet.
 - The Mermaid styles doesn't change if dark-mode is toggled, but it turned
     out to be surprisingly difficult.
 
 [highlightjs]: https://highlightjs.org/
+[syntaxhighlighter]: https://github.com/syntaxhighlighter/syntaxhighlighter

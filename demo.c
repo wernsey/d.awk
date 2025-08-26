@@ -105,6 +105,7 @@
  *   - [x] ~~Task 4~~ - also completed
  *
  * ### Block Quotes
+ *
  * > This is a blockquote. It
  * may span multiple lines.
  * >
@@ -116,6 +117,7 @@
  * The empty line above ends the quote.
  *
  * ### Code Blocks
+ *
  * Code indented with tabs:
  *	//Some code, indented with a single tab:
  *	int main(int argc, char *argv[]) {
