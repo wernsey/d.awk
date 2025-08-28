@@ -98,6 +98,7 @@ It also supports a number of extensions, mostly based on GitHub syntax:
     It can be disabled by specifying `-vMathjax=0` on the command line.
 * `[x]` GitHub-style task lists
 * [MultiMarkdown][]-style footnotes and abbreviations.
+* GitHub-style [alerts][md-alerts]
 * Backslash at the end of a line  \
 forces a line break.
 * There is a special `\![toc]` mode that generates a Table of Contents automatically.
@@ -115,6 +116,7 @@ and test at the same time.
 [MathJax]: https://www.mathjax.org/
 [github-math]: https://github.blog/changelog/2022-05-19-render-mathematical-expressions-in-markdown/
 [github-tables]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables
+[md-alerts]: https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
 
 ## Motivation
 

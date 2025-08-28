@@ -279,12 +279,7 @@ END {
             "//-->\n</script>";
     print "</head><body onload=\"PR.prettyPrint()\">";
 
-    print "<a class=\"dark-toggle no-print\">\n" \
-        "<svg width=\"12\" height=\"12\" viewBox=\"0 0 12 20\" xmlns=\"http://www.w3.org/2000/svg\">\n" \
-            "<g transform=\"translate(8 12) scale(8 8)\">\n" \
-                "<path fill=\"var(--color)\" d=\"M 0.25 -1 C -0.5 -1 -1 -0.5 -1 0 C -1.02 0.5 -0.5 1 0.25 1 C 0 1 -0.5 0.5 -0.5 0 C -0.5 -0.5 0 -1 0.25 -1\"/>\n" \
-            "</g>\n" \
-        "</svg>\n&nbsp;Toggle Dark Mode</a>\n";
+    print "<a class=\"dark-toggle no-print\">\n" svg("moon") "\n&nbsp;Toggle Dark Mode</a>\n";
     print "<script>\n"\
     "const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n"\
     "document.querySelector('.dark-toggle').addEventListener('click', function () {\n"\
@@ -439,7 +434,14 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
         else if(match(st, /^[[:space:]]*>/))
             Buf = Buf "\n" scrub(trim(substr(st, RSTART+RLENGTH)));
         else if(match(st, /^[[:space:]]*$/)) {
-            res = tag("blockquote", tag("p", trim(Buf)));
+			if(match(Buf, /^[[:space:]]*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/)) {
+				tmp = tolower(trim(substr(Buf, RSTART, RLENGTH)));
+				Buf = substr(Buf, RSTART+RLENGTH);
+				gsub(/[^[:alpha:]]/,"",tmp);
+				res = tag("blockquote", tag("p", svg(tmp, icon_color(tmp)) "&nbsp;" toupper(substr(tmp,0,1)) substr(tmp,2) , "class=\"alert-head\"") tag("p", trim(Buf)), "class=\"alert alert-" tmp "\"");
+			} else {
+				res = tag("blockquote", tag("p", trim(Buf)));
+			}
             pop();
             res = res filter(st);
         } else
@@ -520,6 +522,7 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
     return res;
 }
 function scrub(st,    mp, ms, me, r, p, tg, a, tok) {
+    gsub(/<!--.*-->/,"",st);
     sub(/  $/,"<br>\n",st);
     gsub(/(  |[[:space:]]+\\)\n/,"<br>\n",st);
     gsub(/(  |[[:space:]]+\\)$/,"<br>\n",st);
@@ -689,7 +692,7 @@ function scrub(st,    mp, ms, me, r, p, tg, a, tok) {
 
 function push(newmode) {Stack[StackTop++] = Mode; Mode = newmode;}
 function pop() {Mode = Stack[--StackTop];Buf = ""; return Mode;}
-function heading(level, st,       res, href, u, text,svg) {
+function heading(level, st,       res, href, u, text) {
     if(level > 6) level = 6;
     st = trim(st);
     href = tolower(st);
@@ -702,8 +705,7 @@ function heading(level, st,       res, href, u, text,svg) {
     }
     TitleUrls[href] = "#" href;
 
-    svg = "<svg width=\"16\" height=\"16\" xmlns=\"http://www.w3.org/2000/svg\"><g transform=\"rotate(-30, 8, 8)\" stroke=\"#000000\" opacity=\"0.25\"><rect fill=\"none\" height=\"6\" width=\"8\" x=\"2\" y=\"6\" rx=\"1.5\"/><rect fill=\"none\" height=\"6\" width=\"8\" x=\"6\" y=\"4\" rx=\"1.5\"/></g></svg>";
-    text = "<a href=\"#" href "\" class=\"header\">" st "&nbsp;" svg "</a>" (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":"");
+    text = "<a href=\"#" href "\" class=\"header\">" st "&nbsp;" svg("link") "</a>" (TopLinks?"&nbsp;&nbsp;<a class=\"top\" title=\"Return to top\" href=\"#\">&#8593;&nbsp;Top</a>":"");
 
     res = tag("h" level, text, "id=\"" href "\"");
     for(;ToCLevel < level; ToCLevel++) {
@@ -989,6 +991,19 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
     css[".highlight"] = "color:var(--alt-color);background-color:var(--alt-background);";
     css["summary"] = "cursor:pointer;";
     css["ul.toc"] = "list-style-type:none;";
+	
+	css["p.alert-head"] = "font-weight: bolder;";
+	css["blockquote.alert"] = "background: var(--alt-background);";
+	css["blockquote.alert-note"] = "border-left:0.3em solid " icon_color("note") ";";
+	css["blockquote.alert-note .alert-head"] = "color: " icon_color("note") ";";
+	css["blockquote.alert-tip"] = "border-left:0.3em solid " icon_color("tip") ";";
+	css["blockquote.alert-tip .alert-head"] = "color: " icon_color("tip") ";";
+	css["blockquote.alert-important"] = "border-left:0.3em solid " icon_color("important") ";";
+	css["blockquote.alert-important .alert-head"] = "color: " icon_color("important") ";";
+	css["blockquote.alert-warning"] = "border-left:0.3em solid " icon_color("warning") ";";
+	css["blockquote.alert-warning .alert-head"] = "color: " icon_color("warning") ";";
+	css["blockquote.alert-caution"] = "border-left:0.3em solid " icon_color("caution") ";";
+	css["blockquote.alert-caution .alert-head"] = "color: " icon_color("caution") ";";
 
     # This is a trick to prevent page-breaks immediately after headers
     # https://stackoverflow.com/a/53742871/115589
@@ -1058,4 +1073,33 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
     gsub(/%hr%/,hr,ss);
 
     return ss;
+}
+function icon_color(which) {
+	if(which == "note") return "#3d88f1";
+	if(which == "tip") return "#029802";
+	if(which == "important") return "#a30fa3";
+	if(which == "warning") return "#ffb328";
+	if(which == "caution") return "#fa1c1c";
+	return "black";	
+}
+function svg(which, color,        path) {
+	# TODO: Get better at Inkscape
+	if(which == "moon")
+		path = "M 10.04 0.26 A 11.64 11.64 0 0 1 10.79 4.36 A 11.64 11.63625 0 0 1 4.01 14.94 A 8 8 0 0 0 8 16 A 8 8 0 0 0 16 8 A 8 8 0 0 0 10.04 0.26 z";
+	else if(which == "link")
+		path = "m 3.34,4.63 1.31,2.66 0,0 0.61,1.24 0.01,0 1.23,2.5 L 9.52,9.58 8.91,8.34 7.17,9.18 6.82,8.47 6.55,7.92 5.94,6.68 5.59,5.96 5.24,5.26 11.74,2.13 13.67,6.05 11.25,7.21 11.86,8.45 15.53,6.69 12.39,0.29 Z M 0.47,9.31 3.61,15.71 12.63,11.37 11.67,9.43 11.32,8.71 10.71,7.47 10.43,6.92 9.48,4.97 6.48,6.42 7.09,7.66 8.84,6.82 9.19,7.52 9.46,8.08 10.07,9.32 10.42,10.03 10.76,10.73 4.26,13.87 2.33,9.95 4.75,8.79 4.14,7.55 Z";
+	else if(which == "note")
+		path = "M 8 0 A 8 8 0 0 0 0 8 A 8 8 0 0 0 8 16 A 8 8 0 0 0 16 8 A 8 8 0 0 0 8 0 z M 8 1.52 C 11.60 1.52 14.48 4.40 14.48 8 C 14.48 11.60 11.60 14.48 8 14.48 C 4.40 14.48 1.52 11.60 1.52 8 C 1.52 4.40 4.40 1.52 8 1.52 z M 7.01 3.22 L 7.01 4.87 L 8.99 4.87 L 8.99 3.22 L 7.01 3.22 z M 6.28 5.51 L 6.28 7.15 L 7.01 7.15 L 7.01 11.45 L 6.28 11.45 L 6.28 13.09 L 7.01 13.09 L 8.99 13.09 L 9.70 13.09 L 9.70 11.45 L 8.99 11.45 L 8.99 5.51 L 8.97 5.51 L 6.28 5.51 z";
+	else if(which == "tip")
+		path = "M 8 0.06 C 4.8 0.06 2.29 2.12 2.29 6.04 C 2.29 8 4.02 8.96 5.07 10.24 C 5.34 10.58 5.56 11.13 5.77 11.75 L 6.98 11.75 C 6.71 10.93 6.38 10.04 5.96 9.52 C 5.51 8.98 4.84 8.37 4.45 7.97 C 3.79 7.3 3.43 6.81 3.43 6.04 C 3.43 4.32 3.95 3.17 4.74 2.4 C 5.53 1.63 6.64 1.21 8 1.21 C 9.36 1.21 10.53 1.63 11.36 2.41 C 12.19 3.19 12.73 4.33 12.73 6.04 C 12.73 6.75 12.33 7.25 11.59 7.94 C 11.16 8.34 10.43 8.95 9.96 9.52 C 9.7 9.85 9.49 10.27 9.34 10.63 C 9.22 10.95 9.09 11.34 8.96 11.75 L 10.16 11.75 C 10.36 11.13 10.58 10.58 10.85 10.24 C 11.9 8.96 13.88 8 13.88 6.04 C 13.88 2.12 11.2 0.06 8 0.06 z M 5.96 12.35 L 5.96 13.55 L 10.13 13.55 L 10.13 12.35 L 5.96 12.35 z M 6.56 14.21 L 6.56 15.41 L 9.54 15.41 L 9.54 14.21 L 6.56 14.21 z";
+	else if(which == "important")
+		path = "M 0 0 L 0 12.42 L 8.16 12.42 L 8.14 16 L 13.17 12.42 L 16 12.42 L 16 0 L 0 0 z M 1.52 1.52 L 14.48 1.52 L 14.48 10.9 L 12.69 10.9 L 9.68 13.04 L 9.7 10.9 L 1.52 10.9 L 1.52 1.52 z M 6.6 2.64 L 6.6 7.13 L 8.87 7.13 L 8.87 2.64 L 6.6 2.64 z M 6.6 8.11 L 6.6 10.01 L 8.87 10.01 L 8.87 8.11 L 6.6 8.11 z";
+	else if(which == "warning")
+		path = "M 8 0 L 0 15.969 L 15.97 16 L 8 -0.02 z M 8 3.26 L 13.53 14.36 L 2.43 14.34 L 8.01 3.26 z M 7.23 6.13 L 7.23 10.6 L 8.77 10.6 L 8.77 6.13 L 7.23 6.13 z M 7.23 11.69 L 7.23 13.38 L 8.77 13.38 L 8.77 11.69 L 7.23 11.69 z";
+	else if(which == "caution")
+		path = "M 4.7 0 L 0.01 4.68 L 0 11.3 L 4.68 16 L 11.3 16 L 16 11.32 L 16 4.7 L 11.32 0.01 L 4.7 0 z M 5.33 1.52 L 10.7 1.53 L 14.48 5.33 L 14.47 10.7 L 10.67 14.48 L 5.31 14.47 L 1.52 10.67 L 1.53 5.31 L 5.33 1.52 z M 6.82 2.75 L 6.82 9.58 L 9.18 9.58 L 9.18 2.75 L 6.82 2.75 z M 6.82 10.55 L 6.82 13.14 L 9.18 13.14 L 9.18 10.55 L 6.82 10.55 z";
+	else
+		path = "";
+	if(!color) color = "var(--color)";
+	return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" width=\"16\" height=\"16\"><path fill=\"" color "\" d=\"" path "\"/></svg>"
 }

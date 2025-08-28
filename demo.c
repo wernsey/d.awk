@@ -15,9 +15,14 @@
  *
    Lines that don't start with *s, like this one, are ignored.
  *
+ * <!-- 
+ * Alternatively you can use HTML-style comment tags to omit text
+ * from the output document
+ * -->
+ *
  * Blank lines in the comment separate paragraphs.
  *
- * Two spaces at the end of the line
+ * Two spaces at the end of the line  
  * forces a linebreak. Here is another line<br>break.
  *
  * Headings can be written like so:
@@ -116,20 +121,52 @@
  *
  * The empty line above ends the quote.
  *
+ *
+ * #### Alerts
+ *
+ * You can put alert boxes in your document by starting your block quote
+ * with one of `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]` or `[!CAUTION]`.
+ * For example:
+ *
+ * ```
+ * > [!CAUTION]
+ * > some note in the blockquote
+ * > that should have a special box
+ * > 
+ * > You can have multiple paragraphs.
+ * >
+ * > You can _style_ the **text** in the box.
+ * ```
+ *
+ *
+ * ... which renders as
+ *
+ * > [!CAUTION]
+ * > some note in the blockquote
+ * > that should have a special box
+ * > 
+ * > You can have multiple paragraphs.
+ * >
+ * > You can _style_ the **text** in the box.
+ *
+ *
  * ### Code Blocks
  *
  * Code indented with tabs:
+ *
  *	//Some code, indented with a single tab:
  *	int main(int argc, char *argv[]) {
  *		return 0;
  *	}
  *
  * Code indented with spaces:
+ *
  *    //Some code, indented with spaces
  *    
  *    int main(int argc, char *argv[]) {
  *        return 0;
  *    }
+ *
  * This particular implementation doesn't care about blank lines
  * after the code block.
  *
@@ -220,6 +257,8 @@
  *
  * You should also be able to handle the `\( ... \)` syntax:
  * \( \left( \sum_{k=1}^n a_k b_k \right)^2 \leq \left( \sum_{k=1}^n a_k^2 \right) \left( \sum_{k=1}^n b_k^2 \right) \)
+ *
+ * You can use `-vMathjax=0` to disable this functionality.
  *
  * [mathjax]: https://www.mathjax.org/
  * [github-mathjax]: https://github.blog/changelog/2022-05-19-render-mathematical-expressions-in-markdown/
