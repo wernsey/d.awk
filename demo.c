@@ -394,6 +394,33 @@
  * *Still* | `renders` | **nicely**
  * 1 | 2 | 3
  *
+ * ### Definition lists
+ *
+ * You can create definition lists with syntax like this:
+ *
+ * ```
+ * Item One
+ * :    Item one's description comes here
+ * Item Two
+ * :    Item two's description goes here
+ * :    You can have more than one definition
+ *
+ * Item Three
+ * :    The blank line above doesn't matter
+ * ```
+ *
+ * ...which renders like this:
+ *
+ * Item One
+ * :    Item one's description comes here
+ * Item Two
+ * :    Item two's description goes here
+ * :    You can have more than one definition
+ *
+ * Item Three
+ * :    The blank line above doesn't matter
+ *
+ *
  * Using HTML in Documents
  * -----------------------
  *

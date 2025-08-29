@@ -99,6 +99,7 @@ It also supports a number of extensions, mostly based on GitHub syntax:
 * `[x]` GitHub-style task lists
 * [MultiMarkdown][]-style footnotes and abbreviations.
 * GitHub-style [alerts][md-alerts]
+* [Definition Lists](https://www.markdownguide.org/extended-syntax/#definition-lists)
 * Backslash at the end of a line  \
 forces a line break.
 * There is a special `\![toc]` mode that generates a Table of Contents automatically.
