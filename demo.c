@@ -230,16 +230,31 @@
  * [Mermaid][] diagrams:
  *
  * ```mermaid
- *   graph TD;
- *       A-->B;
- *       A-->C;
- *       B-->D;
- *       C-->D;
+ * graph TD;
+ * A-->B;
+ * A-->C;
+ * B-->D;
+ * C-->D;
+ * ```
+ *
+ * You can [theme][mm-themes] your diagrams:
+ * 
+ * ```mermaid
+ * ---
+ * config:
+ *   theme: 'forest'
+ * ---
+ * graph TD;
+ * A-->B;
+ * A-->C;
+ * B-->D;
+ * C-->D;
  * ```
  *
  * You can specify `-vMermaid=0` on the command line to disable this functionality.
  *
  * [Mermaid]: https://github.com/mermaid-js/mermaid
+ * [mm-themes]: https://docs.mermaidchart.com/mermaid-oss/config/theming.html#diagram-specific-themes
  *
  * ### MathJax
  *

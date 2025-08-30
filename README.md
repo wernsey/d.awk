@@ -358,6 +358,11 @@ Things I'd like to add/fix in the future:
 	but haven't made a decision yet.
 - The Mermaid styles doesn't change if dark-mode is toggled, but it turned
     out to be surprisingly difficult.
+  - I've settled on using `'neutral'` as the default theme, which works in
+    light and dark modes.
+- I've considered adding support for [typograms][] but it seems it is no longer
+  being maintained.
 
 [highlightjs]: https://highlightjs.org/
 [syntaxhighlighter]: https://github.com/syntaxhighlighter/syntaxhighlighter
+[typograms]: https://github.com/google/typograms

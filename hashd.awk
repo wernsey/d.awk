@@ -24,6 +24,7 @@ BEGIN {
 
     if(Pretty== "") Pretty = 1;
     if(Mermaid== "") Mermaid = 1;
+	if(MermaidTheme== "") MermaidTheme = "neutral";
     if(Mathjax=="") Mathjax = 1;
 
     if(HideToCLevel== "") HideToCLevel = 3;
@@ -179,7 +180,7 @@ END {
     }
     if(Mermaid && HasMermaid) {
         print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
-        print "<script>mermaid.initialize({ startOnLoad: true, theme:window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'default'  });</script>";
+        print "<script>mermaid.initialize({ startOnLoad: true, theme:'" MermaidTheme "'});</script>";
     }
     if(Mathjax && HasMathjax) {
         print "<script>MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]},svg:{fontCache:'global'}};</script>";
@@ -1018,7 +1019,7 @@ function icon_color(which) {
     if(which == "caution") return "#fa1c1c";
     return "black"; 
 }
-function svg(which, color, size,        path) {
+function svg(which, color, size,        path, body) {
     # TODO: Get better at Inkscape
     if(which == "moon")
         path = "M 10.04 0.26 A 11.64 11.64 0 0 1 10.79 4.36 A 11.64 11.63625 0 0 1 4.01 14.94 A 8 8 0 0 0 8 16 A 8 8 0 0 0 16 8 A 8 8 0 0 0 10.04 0.26 z";
@@ -1036,8 +1037,16 @@ function svg(which, color, size,        path) {
         path = "M 4.7 0 L 0.01 4.68 L 0 11.3 L 4.68 16 L 11.3 16 L 16 11.32 L 16 4.7 L 11.32 0.01 L 4.7 0 z M 5.33 1.52 L 10.7 1.53 L 14.48 5.33 L 14.47 10.7 L 10.67 14.48 L 5.31 14.47 L 1.52 10.67 L 1.53 5.31 L 5.33 1.52 z M 6.82 2.75 L 6.82 9.58 L 9.18 9.58 L 9.18 2.75 L 6.82 2.75 z M 6.82 10.55 L 6.82 13.14 L 9.18 13.14 L 9.18 10.55 L 6.82 10.55 z";
     else
         path = "";
+    
+	if(!UsedSymbols[which]) {
+		UsedSymbols[which] = 1;
+		body = "<symbol id=\"icon-" which "\"><path d=\"" path "\"/></symbol><use href=\"#icon-" which "\"/>";
+	} else {
+		body = "<use fill=\"" color "\" href=\"#icon-" which "\"/>";
+	}
+	
     if(!color) color = "var(--color)";
     if(!size) size = "16";
     
-    return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" width=\"" size "\" height=\"" size "\"><path fill=\"" color "\" d=\"" path "\"/></svg>"
+    return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" width=\"" size "\" height=\"" size "\" fill=\"" color "\">" body "</svg>"
 }
