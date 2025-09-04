@@ -9,7 +9,17 @@
 #
 # <https://github.com/wernsey/d.awk>
 #
-#     (c) 2016 Werner Stoop
+# ## References
+#
+# - <https://tools.ietf.org/html/rfc7764>
+# - <http://daringfireball.net/projects/markdown/syntax>
+# - <https://guides.github.com/features/mastering-markdown/>
+# - <http://fletcher.github.io/MultiMarkdown-4/syntax>
+# - <http://spec.commonmark.org>
+#
+# ## License
+#
+#     (c) 2016-2023 Werner Stoop
 #     Copying and distribution of this file, with or without modification,
 #     are permitted in any medium without royalty provided the copyright
 #     notice and this notice are preserved. This file is offered as-is,
@@ -109,8 +119,8 @@ END {
     else {
         if(Pretty && HasPretty) {
             CSS = CSS "\nbody {--str:#a636d8;--kwd:#4646ff;--com:#56a656;--lit:#e05e10;--typ:#0222ce;--pun:#595959;}\n"\
-                "body.dark-theme {--str:#eb28df;--kwd:#f7d689;--com:#267b26;--lit: #ff8181;--typ:#228dff;--pun: #EEE;}\n"\
-                "@media (prefers-color-scheme: dark) {\n"\
+                "@media screen { body.dark-theme {--str:#eb28df;--kwd:#f7d689;--com:#267b26;--lit: #ff8181;--typ:#228dff;--pun: #EEE;} }\n"\
+                "@media screen (prefers-color-scheme: dark) {\n"\
                 "    body.light-theme {--str:#a636d8;--kwd:#4646ff;--com:#56a656;--lit:#e05e10;--typ:#0222ce;--pun:#595959;}\n"\
                 "    body {--str:#eb28df;--kwd:#f7d689;--com:#267b26;--lit: #ff8181;--typ:#228dff;--pun: #EEE;}\n"\
                 "}\n"\
@@ -126,9 +136,14 @@ END {
                 "    .kwd, .typ, .tag { font-weight: bold }\n"\
                 "}";
         }
-        print "<style><!--" CSS "\n" \
+        print "<style><!--\n" CSS "\n" \
         ".print-only {display:none}\n"\
-        "@media print { .no-print { display: none !important; } .print-only {display:block} }\n" \
+        "@media print {\n"\
+        "  .no-print { display: none !important;}\n"\
+        "  .print-only {display:block;}\n" \
+        "  code {font-size: smaller;}\n"\
+        "  pre {overflow-x: clip !important;}\n"\
+        "}\n"\
         "--></style>";
     }
     if(ToC && match(Out, /!\[toc[-+]?\]/))
@@ -871,7 +886,7 @@ function obfuscate(e,     r,i,t,o) {
     }
     return o;
 }
-function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
+function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     if(Css == "0") return "";
 
     css["body"] = "color:var(--color);background:var(--background);font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
@@ -905,7 +920,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
     css["strong,b"] = "color:var(--color)";
     css["code"] = "color:var(--alt-color);font-weight:bold;";
     css["blockquote"] = "margin-left:1em;color:var(--alt-color);border-left:0.2em solid var(--alt-color);padding:0.25em 0.5em;overflow-x:auto;";
-    css["pre"] = "color:var(--alt-color);background:var(--alt-background);border:1px solid;border-radius:2px;line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
+    css["pre"] = "color:var(--alt-color);background:var(--alt-background);line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
     css["table.dawk-ex"] = "border-collapse:collapse;margin:0.5em;";
     css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid var(--heading);";
     css["th.dawk-ex"] = "color:var(--heading);border:1px solid var(--heading);border-bottom:2px solid var(--heading);";
@@ -992,16 +1007,27 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt) {
     for(i = 0; i<=255; i++)_hex[sprintf("%02X",i)]=i;
 
     # Light theme colors:
-    lt = "{--color: #263053; --alt-color: #16174c; --heading: #2A437E; --background: #FDFDFD; --alt-background: #F9FAFF;}";
+    lt = "--color: #263053; --alt-color: #16174c; --heading: #2A437E; --background: #FDFDFD; --alt-background: #F9FAFF;";
     # Dark theme colors:
-    dt = "{--color: #E9ECFF; --alt-color: #9DAFE6; --heading: #6C89E8; --background: #13192B; --alt-background: #232A42;}";
+    dt = "--color: #E9ECFF; --alt-color: #9DAFE6; --heading: #6C89E8; --background: #13192B; --alt-background: #232A42;";
+	
+	# Print theme: Same as light theme...
+	pt = lt;
+	# ...but make sure the background is white
+	sub(/--background:[[:space:]]*#?[[:alnum:]]+/, "--background: white", pt);
+	
+    ss = "@media screen {\n" \
+        "  body { " lt " }\n" \
+        "  body.dark-theme { " dt " }\n" \
+        "  @media (prefers-color-scheme: dark) {\n" \
+        "    body { " dt " }\n" \
+        "    body.light-theme { " lt " }\n" \
+        "  }\n" \
+        "}\n" \
+        "@media print {\n" \
+        "  body  { " pt " }\n" \
+        "}";
 
-    ss = ss "\nbody " lt;
-    ss = ss "\nbody.dark-theme " dt;
-    ss = ss "\n@media (prefers-color-scheme: dark) {"
-    ss = ss "\n  body " dt;
-    ss = ss "\n  body.light-theme " lt;
-    ss = ss "\n}"
     for(k in css)
         ss = ss "\n" k "{" css[k] "}";
     gsub(/%maxwidth%/,MaxWidth,ss);
