@@ -19,7 +19,7 @@
 #
 # ## License
 #
-#     (c) 2016-2023 Werner Stoop
+#     (c) 2016-2025 Werner Stoop
 #     Copying and distribution of this file, with or without modification,
 #     are permitted in any medium without royalty provided the copyright
 #     notice and this notice are preserved. This file is offered as-is,
@@ -170,12 +170,6 @@ END {
     }
 
     print "<a class=\"dark-toggle no-print\">\n" svg("moon", "", 12) "\n&nbsp;Toggle Dark Mode</a>\n";
-    print "<script>\n"\
-    "const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n"\
-    "document.querySelector('.dark-toggle').addEventListener('click', function () {\n"\
-    "    document.body.classList.toggle(prefersDarkScheme.matches ? 'light-theme' : 'dark-theme');\n"\
-    "});\n"\
-    "</script>";
 
     if(Out) {
         Out = fix_footnotes(Out);
@@ -189,6 +183,30 @@ END {
             print "<hr><ol class=\"footnotes\">\n" footnotes "</ol>";
         }
     }
+
+	print "<script>\n"\
+	"(() => {\n" \
+	"  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n" \
+	"  document.querySelector('.dark-toggle').addEventListener('click', function () {\n" \
+	"    document.body.classList.toggle(prefersDarkScheme.matches ? 'light-theme' : 'dark-theme');\n" \
+	"  });\n" \
+	"  const copyCode = async (event) => { \n" \
+	"    let elem = event.target;\n" \
+	"    while(!(elem.classList.contains('code-block')))\n" \
+	"      elem = elem.parentElement;\n" \
+	"    let code = elem.querySelector('code').innerText;\n" \
+	"    try {\n" \
+	"      await navigator.clipboard.writeText(code);          \n" \
+	"      let msg = elem.querySelector('.code-message');\n" \
+	"      msg.classList.remove('hidden');\n" \
+	"      setTimeout(()=>msg.classList.add('hidden'), 500);           \n" \
+	"    } catch (error) {\n" \
+	"      console.error(error.message);\n" \
+	"    }\n" \
+	"  };\n" \
+	"  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n" \
+	"})();\n" \
+    "</script>";
 
     if(Pretty && HasPretty) {
         print "<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/prettify.js\"></script>";
@@ -381,8 +399,10 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
                 }
                 if(mmaid && Mermaid)
                     res = tag("div", Buf, "class=\"mermaid\"");
-                else
+                else {
                     res = tag("pre", tag("code", escape(Buf), plang));
+					res = tag("div", tag("div", tag("span", "Copied","class=\"code-message hidden\"") tag("span", svg("copy") ,"class=\"code-button\""), "class=\"code-toolbar no-print\"") res, "class=\"code-block\"");
+				}
             }
             pop();
             if(Preterm) sub(/^[[:space:]]*```+[[:alnum:]]*/,"",st);
@@ -957,6 +977,16 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["blockquote.alert-caution"] = "border-left:0.3em solid " icon_color("caution") ";";
     css["blockquote.alert-caution .alert-head"] = "color: " icon_color("caution") ";";
 
+	css["div.code-block .code-button"] = "border:2px solid rgb(from var(--alt-color) r g b / 20%);background: var(--background);" \
+											"width:16px;height:16px;" \
+											"cursor:pointer;padding:4px;border-radius:2px;opacity:0;" \
+											"transition-property: opacity; transition-duration: .25s;";
+	css["div.code-block:hover .code-button"] = "opacity:1 !important;";
+	css["div.code-block"] = "position: sticky;";
+	css["div.code-toolbar"] = "display: flex;justify-content: flex-end;width: 100%;position: absolute;right: 12px; top: 4px;";
+	css[".hidden"] = "opacity:0; transition-property: opacity; transition-duration: .5s;";
+	css["span.code-message"] = "font-size: smaller; padding: 0.2em 0.5em;";
+	
     # This is a trick to prevent page-breaks immediately after headers
     # https://stackoverflow.com/a/53742871/115589
     css["blockquote,code,pre,table"] = "break-inside: avoid;break-before: auto;"
@@ -1061,6 +1091,8 @@ function svg(which, color, size,        path, body) {
         path = "M 8 0 L 0 15.969 L 15.97 16 L 8 -0.02 z M 8 3.26 L 13.53 14.36 L 2.43 14.34 L 8.01 3.26 z M 7.23 6.13 L 7.23 10.6 L 8.77 10.6 L 8.77 6.13 L 7.23 6.13 z M 7.23 11.69 L 7.23 13.38 L 8.77 13.38 L 8.77 11.69 L 7.23 11.69 z";
     else if(which == "caution")
         path = "M 4.7 0 L 0.01 4.68 L 0 11.3 L 4.68 16 L 11.3 16 L 16 11.32 L 16 4.7 L 11.32 0.01 L 4.7 0 z M 5.33 1.52 L 10.7 1.53 L 14.48 5.33 L 14.47 10.7 L 10.67 14.48 L 5.31 14.47 L 1.52 10.67 L 1.53 5.31 L 5.33 1.52 z M 6.82 2.75 L 6.82 9.58 L 9.18 9.58 L 9.18 2.75 L 6.82 2.75 z M 6.82 10.55 L 6.82 13.14 L 9.18 13.14 L 9.18 10.55 L 6.82 10.55 z";
+    else if(which == "copy")
+        path = "M 5.8 0.9 L 5.8 3.6 L 7 3.6 L 7 2 L 14 2 L 14 10 L 11.6 10 L 11.6 11 L 15.1 11 L 15.1 0.9 L 5.8 0.9 z M 1.2 4.8 L 1.2 14.9 L 10.5 14.9 L 10.5 4.8 L 1.2 4.8 z M 2.3 5.9 L 9.3 5.9 L 9.3 13.7 L 2.3 13.7 L 2.3 5.9 z";
     else
         path = "";
     
