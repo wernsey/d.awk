@@ -18,7 +18,7 @@ BEGIN {
 
     if(Pretty== "") Pretty = 1;
     if(Mermaid== "") Mermaid = 1;
-	if(MermaidTheme== "") MermaidTheme = "neutral";
+    if(MermaidTheme== "") MermaidTheme = "neutral";
     if(Mathjax=="") Mathjax = 1;
 
     if(HideToCLevel== "") HideToCLevel = 3;
@@ -29,7 +29,7 @@ BEGIN {
     if(MaxWidth=="") MaxWidth="1080px";
     if(NumberHeadings=="") NumberHeadings = 1;
     if(NumberH1s=="") NumberH1s = 0;
-    
+
     # Definition lists are still experimental, so if they cause problems you can
     # disable them here, and use <dl> <dt> and <dd> tags instead
     if(DefLists=="") DefLists = 1;
@@ -40,9 +40,9 @@ BEGIN {
     for(i = 0; i < 128; i++)
         _ord[sprintf("%c", i)] = i;
     srand();
-    
+
     # Allowed HTML tags:
-    HTML_tags = "^/?(a|abbr|b|blockquote|br|caption|cite|code|col|colgroup|column|dd|del|details|div|dl|dt|em|figcaption|figure|hr|i|img|ins|li|mark|ol|p|pre|q|s|samp|small|span|strong|sub|summary|sup|table|tbody|td|tfoot|th|thead|tr|u|ul|var)$";
+    HTML_tags = "^/?(a|abbr|b|blockquote|br|caption|cite|code|col|colgroup|column|dd|del|details|div|dl|dt|em|figcaption|figure|h[[:digit:]]+|hr|i|img|ins|li|mark|ol|p|pre|q|s|samp|small|span|strong|sub|summary|sup|table|tbody|td|tfoot|th|thead|tr|u|ul|var)$";
 }
 
 {gsub(/\r/,"");}
@@ -58,13 +58,15 @@ END {
             Buf = Buf "\n</" Open[ListLevel--] ">";
         Out = Out tag(Mode, Buf "\n");
     } else if(Mode == "pre") {
-        while(ListLevel > 1)
-            Buf = Buf "\n</" Open[ListLevel--] ">";
-        Out = Out tag(Mode, Buf "\n");
+        Out = Out end_pre(Buf);
     } else if(Mode == "table") {
         Out = Out end_table();
+    } else if(Mode == "blockquote") {
+        Out = Out end_blockquote(Buf);
     } else if(Mode == "dl") {
         Out = Out end_dl(Buf);
+        pop();
+        if(Dl_line) Out = Out filter(Dl_line);
     } else {
         Buf = trim(scrub(Buf));
         if(Buf)
@@ -129,7 +131,8 @@ END {
         print "</head><body>";
     }
 
-    print "<a class=\"dark-toggle no-print\">\n" svg("moon", "", 12) "\n&nbsp;Toggle Dark Mode</a>\n";
+    if(Css)
+        print "<a class=\"dark-toggle no-print\">\n" svg("moon", "", 12) "\n&nbsp;Toggle Dark Mode</a>\n";
 
     if(Out) {
         Out = fix_footnotes(Out);
@@ -144,28 +147,28 @@ END {
         }
     }
 
-	print "<script>\n"\
-	"(() => {\n" \
-	"  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n" \
-	"  document.querySelector('.dark-toggle').addEventListener('click', function () {\n" \
-	"    document.body.classList.toggle(prefersDarkScheme.matches ? 'light-theme' : 'dark-theme');\n" \
-	"  });\n" \
-	"  const copyCode = async (event) => { \n" \
-	"    let elem = event.target;\n" \
-	"    while(!(elem.classList.contains('code-block')))\n" \
-	"      elem = elem.parentElement;\n" \
-	"    let code = elem.querySelector('code').innerText;\n" \
-	"    try {\n" \
-	"      await navigator.clipboard.writeText(code);          \n" \
-	"      let msg = elem.querySelector('.code-message');\n" \
-	"      msg.classList.remove('hidden');\n" \
-	"      setTimeout(()=>msg.classList.add('hidden'), 500);           \n" \
-	"    } catch (error) {\n" \
-	"      console.error(error.message);\n" \
-	"    }\n" \
-	"  };\n" \
-	"  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n" \
-	"})();\n" \
+    print "<script>\n"\
+    "(() => {\n" \
+    "  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n" \
+    "  document.querySelector('.dark-toggle').addEventListener('click', function () {\n" \
+    "    document.body.classList.toggle(prefersDarkScheme.matches ? 'light-theme' : 'dark-theme');\n" \
+    "  });\n" \
+    "  const copyCode = async (event) => { \n" \
+    "    let elem = event.target;\n" \
+    "    while(!(elem.classList.contains('code-block')))\n" \
+    "      elem = elem.parentElement;\n" \
+    "    let code = elem.querySelector('code').innerText;\n" \
+    "    try {\n" \
+    "      await navigator.clipboard.writeText(code);          \n" \
+    "      let msg = elem.querySelector('.code-message');\n" \
+    "      msg.classList.remove('hidden');\n" \
+    "      setTimeout(()=>msg.classList.add('hidden'), 500);           \n" \
+    "    } catch (error) {\n" \
+    "      console.error(error.message);\n" \
+    "    }\n" \
+    "  };\n" \
+    "  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n" \
+    "})();\n" \
     "</script>";
 
     if(Pretty && HasPretty) {
@@ -286,7 +289,7 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
                 Align[i] = "";
             process_table_row(st);
             push("table");
-        } else if(match(st, /^[[:space:]]*([*+-]|[[:digit:]]+\.)[[:space:]]/)) {
+        } else if(match(st, /^[[:space:]]*([*+-]|[[:digit:]]+\.)[[:space:][]/)) {
             if(Buf) res = tag("p", scrub(Buf));
             Buf="";
             match(st, /^[[:space:]]*/);
@@ -298,8 +301,8 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
         } else if(DefLists && match(st, /^[[:space:]]*:/)) {
             res = "";
             Buf = Buf st "\n";
-            Dl=1;
-            Dl0 = "";
+            Dl_state=1;
+            Dl_line = "";
             push("dl");
         } else if(match(st, /^[[:space:]]*$/)) {
             if(trim(Buf)) {
@@ -315,14 +318,7 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
         else if(match(st, /^[[:space:]]*>/))
             Buf = Buf "\n" scrub(trim(substr(st, RSTART+RLENGTH)));
         else if(match(st, /^[[:space:]]*$/)) {
-            if(match(Buf, /^[[:space:]]*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/)) {
-                tmp = tolower(trim(substr(Buf, RSTART, RLENGTH)));
-                Buf = substr(Buf, RSTART+RLENGTH);
-                gsub(/[^[:alpha:]]/,"",tmp);
-                res = tag("blockquote", tag("p", svg(tmp, icon_color(tmp)) "&nbsp;" toupper(substr(tmp,0,1)) substr(tmp,2) , "class=\"alert-head\"") tag("p", trim(Buf)), "class=\"alert alert-" tmp "\"");
-            } else {
-            res = tag("blockquote", tag("p", trim(Buf)));
-            }
+            res = end_blockquote(Buf);
             pop();
             res = res filter(st);
         } else
@@ -340,30 +336,7 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
             Buf = Buf ((Buf)?"\n":"") substr(st, RSTART+RLENGTH);
         else {
             gsub(/\t/,"    ",Buf);
-            if(length(trim(Buf)) > 0) {
-                plang = ""; mmaid=0;
-                if(match(Preterm, /^[[:space:]]*```+/)) {
-                    plang = trim(substr(Preterm, RSTART+RLENGTH));
-                    if(plang) {
-                        if(plang == "mermaid") {
-                            mmaid = 1;
-                            HasMermaid = 1;
-                        } else {
-                            HasPretty = 1;
-                            if(plang == "auto")
-                                plang = "class=\"prettyprint\"";
-                            else
-                                plang = "class=\"prettyprint lang-" plang "\"";
-                        }
-                    }
-                }
-                if(mmaid && Mermaid)
-                    res = tag("div", Buf, "class=\"mermaid\"");
-                else {
-                    res = tag("pre", tag("code", escape(Buf), plang));
-					res = tag("div", tag("div", tag("span", "Copied","class=\"code-message hidden\"") tag("span", svg("copy") ,"class=\"code-button\""), "class=\"code-toolbar no-print\"") res, "class=\"code-block\"");
-				}
-            }
+            res = end_pre(Buf);
             pop();
             if(Preterm) sub(/^[[:space:]]*```+[[:alnum:]]*/,"",st);
             res = res filter(st);
@@ -401,40 +374,46 @@ function filter(st,       res,tmp, linkdesc, url, delim, edelim, name, def, plan
             }
         }
     } else if(Mode == "dl") {
-        if(Dl == 1) {       
+        if(Dl_state == 1) {
             if(match(st, /^[[:space:]]*:/)) {
-                Buf = Buf "\n" st;  
+                Buf = Buf "\n" st;
             } else if(match(st, /^[[:space:]]*$/)) {
-                Dl = 3;
-            } else {    
-                Buf = Buf "\n" st;      
-                #Buf = Buf st;      
-                Dl = 2;         
+                Buf = Buf "\n";
+                Dl_state = 3;
+            } else if(match(st, /^(   |\t)[[:space:]]+[^[:space:]]/)) {
+                Buf = Buf "\n" st;
+            } else {
+                Buf = Buf "\n" st;
+                Dl_state = 2;
             }
-        } else if(Dl == 2) {
-            if(match(st, /^[[:space:]]*:/)) {           
-                Buf = Buf "\n" st;  
-                Dl = 1;
+        } else if(Dl_state == 2) {
+            if(match(st, /^[[:space:]]*:/)) {
+                Buf = Buf "\n" st;
+                Dl_state = 1;
             } else {
                 res = end_dl(Buf);
                 pop();
                 res = res filter(st);
             }
-        } else if(Dl == 3) {
-            if(!match(st, /^[[:space:]]*$/)) {
-                Dl0 = Dl0 "\n" st;
-                Dl = 4;
+        } else if(Dl_state == 3) {
+            if(match(st, /^(   |\t)[[:space:]]+[^[:space:]]/)) {
+                Buf = Buf "\n" st;
+                Dl_state = 1;
+            } else if(!match(st, /^[[:space:]]*$/)) {
+                Dl_line = Dl_line "\n" st;
+                Dl_state = 4;
+            } else {
+                Buf = Buf "\n";
             }
-        } else if(Dl == 4) {
+        } else if(Dl_state == 4) {
             if(match(st, /^[[:space:]]*:/)) {
-                Buf = Buf "\n" Dl0 "\n" st;
-                #Buf = Buf Dl0 "\n" st;
-                Dl0 = "";
-                Dl = 1;
+                Buf = Buf "\n" Dl_line "\n" st;
+                Dl_line = "";
+                Dl_state = 1;
             } else {
                 res = end_dl(Buf);
                 pop();
-                res = res filterM(Dl0 "\n" st);
+                res = res filterM(Dl_line "\n" st);
             }
         }
     }
@@ -690,17 +669,69 @@ function end_table(         r,c,t,a,s) {
     }
     return tag("table", s, "class=\"da\"");
 }
-function end_dl(buffer,     n,i,tmp) {
-    n = split(trim(buffer), Dl_Rows, /\n+/);
-    for(i = 1; i <= n; i++) {
-        if(match(Dl_Rows[i], /^[[:space:]]:[[:space:]]/)) {
-            sub(/^[[:space:]]:[[:space:]]/,"", Dl_Rows[i]);
-            tmp = tmp tag("dd", scrub(Dl_Rows[i]));
-        } else {
-            tmp = tmp tag("dt", scrub(Dl_Rows[i]));
+function end_pre(buffer,         res, plang, mmaid) {
+    if(length(trim(buffer)) > 0) {
+        plang = ""; mmaid=0;
+        if(match(Preterm, /^[[:space:]]*```+/)) {
+            plang = trim(substr(Preterm, RSTART+RLENGTH));
+            if(plang) {
+                if(plang == "mermaid") {
+                    mmaid = 1;
+                    HasMermaid = 1;
+                } else {
+                    HasPretty = 1;
+                    if(plang == "auto")
+                        plang = "class=\"prettyprint\"";
+                    else
+                        plang = "class=\"prettyprint lang-" plang "\"";
+                }
+            }
+        }
+        if(mmaid && Mermaid)
+            res = tag("div", buffer, "class=\"mermaid\"");
+        else {
+            res = tag("pre", tag("code", escape(buffer), plang));
+            if(Css)
+                res = tag("div", tag("div", tag("span", "Copied","class=\"code-message hidden\"") tag("span", svg("copy") ,"class=\"code-button\""), "class=\"code-toolbar no-print\"") res, "class=\"code-block\"");
         }
     }
-    return tag("dl", tmp);
+    return res;
+}
+function end_blockquote(buffer,        tmp) {
+    if(match(buffer, /^[[:space:]]*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/)) {
+        tmp = tolower(trim(substr(buffer, RSTART, RLENGTH)));
+        buffer = substr(buffer, RSTART+RLENGTH);
+        gsub(/[^[:alpha:]]/,"",tmp);
+        return tag("blockquote", tag("p", svg(tmp, icon_color(tmp)) "&nbsp;" toupper(substr(tmp,0,1)) substr(tmp,2) , "class=\"alert-head\"") tag("p", trim(buffer)), "class=\"alert alert-" tmp "\"");
+    }
+    return tag("blockquote", tag("p", trim(buffer)));
+}
+function end_dl(buffer,     n,i,dd,res) {
+    gsub(/\n\n+/, "\n\n", buffer);
+    n = split(trim(buffer), Dl_Rows, /\n/);
+    for(i = 1; i <= n; i++) {
+        if(match(Dl_Rows[i], /^[[:space:]]:[[:space:]]/)) {
+            if(dd) res = res tag("dd", tag("p", scrub(dd)));
+            sub(/^[[:space:]]:[[:space:]]/,"", Dl_Rows[i]);
+            dd = Dl_Rows[i];
+        } else if(match(Dl_Rows[i], /^(   |\t)[[:space:]]+[^[:space:]]/)) {
+            if(dd) {
+                dd = dd "\n" trim(Dl_Rows[i]);
+        } else {
+                res = res tag("dt", scrub(Dl_Rows[i]));
+        }
+        } else if(match(Dl_Rows[i], /^$/)) {
+            if(dd) dd = dd "</p><p>";
+        } else {
+            if(dd) {
+                res = res tag("dd", tag("p", scrub(dd)));
+                dd = "";
+        }
+            res = res tag("dt", scrub(Dl_Rows[i]));
+        }
+    }
+    if(dd) res = res tag("dd", tag("p", scrub(dd)));
+    return tag("dl", res);
 }
 function make_toc(st,              r,p,dis,t,n,tocBody) {
     if(!ToC) return st;
@@ -923,8 +954,9 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css[".highlight"] = "color:var(--alt-color);background-color:var(--alt-background);";
     css["summary"] = "cursor:pointer;";
     css["ul.toc"] = "list-style-type:none;";
-    
+
     css["p.alert-head"] = "font-weight: bolder;";
+    css["p.alert-head svg"] = "margin-right: 0.5em;";
     css["blockquote.alert"] = "background: var(--alt-background);";
     css["blockquote.alert-note"] = "border-left:0.3em solid " icon_color("note") ";";
     css["blockquote.alert-note .alert-head"] = "color: " icon_color("note") ";";
@@ -937,16 +969,16 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["blockquote.alert-caution"] = "border-left:0.3em solid " icon_color("caution") ";";
     css["blockquote.alert-caution .alert-head"] = "color: " icon_color("caution") ";";
 
-	css["div.code-block .code-button"] = "border:2px solid rgb(from var(--alt-color) r g b / 20%);background: var(--background);" \
-											"width:16px;height:16px;" \
-											"cursor:pointer;padding:4px;border-radius:2px;opacity:0;" \
-											"transition-property: opacity; transition-duration: .25s;";
-	css["div.code-block:hover .code-button"] = "opacity:1 !important;";
-	css["div.code-block"] = "position: sticky;";
-	css["div.code-toolbar"] = "display: flex;justify-content: flex-end;width: 100%;position: absolute;right: 12px; top: 4px;";
-	css[".hidden"] = "opacity:0; transition-property: opacity; transition-duration: .5s;";
-	css["span.code-message"] = "font-size: smaller; padding: 0.2em 0.5em;";
-	
+    css["div.code-block .code-button"] = "border:2px solid rgb(from var(--alt-color) r g b / 20%);background: var(--background);" \
+                                            "width:16px;height:16px;" \
+                                            "cursor:pointer;padding:4px;border-radius:2px;opacity:0;" \
+                                            "transition-property: opacity; transition-duration: .25s;";
+    css["div.code-block:hover .code-button"] = "opacity:1 !important;";
+    css["div.code-block"] = "position: sticky;";
+    css["div.code-toolbar"] = "display: flex;justify-content: flex-end;width: 100%;position: absolute;right: 12px; top: 4px;";
+    css[".hidden"] = "opacity:0; transition-property: opacity; transition-duration: .5s;";
+    css["span.code-message"] = "font-size: smaller; padding: 0.2em 0.5em;";
+
     # This is a trick to prevent page-breaks immediately after headers
     # https://stackoverflow.com/a/53742871/115589
     css["blockquote,code,pre,table"] = "break-inside: avoid;break-before: auto;"
@@ -1000,12 +1032,12 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     lt = "--color: #263053; --alt-color: #16174c; --heading: #2A437E; --background: #FDFDFD; --alt-background: #F9FAFF;";
     # Dark theme colors:
     dt = "--color: #E9ECFF; --alt-color: #9DAFE6; --heading: #6C89E8; --background: #13192B; --alt-background: #232A42;";
-	
-	# Print theme: Same as light theme...
-	pt = lt;
-	# ...but make sure the background is white
-	sub(/--background:[[:space:]]*#?[[:alnum:]]+/, "--background: white", pt);
-	
+
+    # Print theme: Same as light theme...
+    pt = lt;
+    # ...but make sure the background is white
+    sub(/--background:[[:space:]]*#?[[:alnum:]]+/, "--background: white", pt);
+
     ss = "@media screen {\n" \
         "  body { " lt " }\n" \
         "  body.dark-theme { " dt " }\n" \
@@ -1033,7 +1065,7 @@ function icon_color(which) {
     if(which == "important") return "#a30fa3";
     if(which == "warning") return "#ffb328";
     if(which == "caution") return "#fa1c1c";
-    return "black"; 
+    return "black";
 }
 function svg(which, color, size,        path, body) {
     # TODO: Get better at Inkscape
@@ -1055,16 +1087,16 @@ function svg(which, color, size,        path, body) {
         path = "M 5.8 0.9 L 5.8 3.6 L 7 3.6 L 7 2 L 14 2 L 14 10 L 11.6 10 L 11.6 11 L 15.1 11 L 15.1 0.9 L 5.8 0.9 z M 1.2 4.8 L 1.2 14.9 L 10.5 14.9 L 10.5 4.8 L 1.2 4.8 z M 2.3 5.9 L 9.3 5.9 L 9.3 13.7 L 2.3 13.7 L 2.3 5.9 z";
     else
         path = "";
-    
-	if(!UsedSymbols[which]) {
-		UsedSymbols[which] = 1;
-		body = "<symbol id=\"icon-" which "\"><path d=\"" path "\"/></symbol><use href=\"#icon-" which "\"/>";
-	} else {
-		body = "<use fill=\"" color "\" href=\"#icon-" which "\"/>";
-	}
-	
+
+    if(!UsedSymbols[which]) {
+        UsedSymbols[which] = 1;
+        body = "<symbol id=\"icon-" which "\"><path d=\"" path "\"/></symbol><use href=\"#icon-" which "\"/>";
+    } else {
+        body = "<use fill=\"" color "\" href=\"#icon-" which "\"/>";
+    }
+
     if(!color) color = "var(--color)";
     if(!size) size = "16";
-    
+
     return "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" width=\"" size "\" height=\"" size "\" fill=\"" color "\">" body "</svg>"
 }

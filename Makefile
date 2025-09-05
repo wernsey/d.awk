@@ -2,7 +2,7 @@
 # what the scripts in this project are and how you
 # might use them to generate documentation.
 
-all: demo.html demo-alt.html help.html README.html README-alt.html
+all: demo.html demo-alt.html help.html README.html README-alt.html demo.py.html
 
 # The base case is where you have a source file, like demo.c,
 # that contains comments formatted in Markdown. Then you
@@ -41,19 +41,22 @@ demo.md: demo.c xtract.awk
 # output as `d.awk`:
 demo-alt.html: mdown.awk demo.md
 	awk -f mdown.awk demo.md > demo-alt.html
+	
 
 # (There will be a couple of small differences, mostly in how
 # whitespace is handled)
 
-
 # Lastly, `hashd.awk` does the same as `d.awk`, but for languages
-# that use hash `#` symbols for comments. Here we use it
-# to generate a help file for `d.awk`
+# that use hash `#` symbols for comments. 
+demo.py.html: hashd.awk demo.py
+	awk -f hashd.awk demo.py > demo.py.html
+	
+#Here we use it to generate a help file for `d.awk`
 help.html: hashd.awk d.awk
 	awk -f hashd.awk d.awk > help.html
 
 .PHONY: clean
 
 clean:
-	-rm demo.html demo-alt.html demo.md
+	-rm demo.html demo-alt.html demo.md demo.py.html
 	-rm README.html README-alt.html help.html
