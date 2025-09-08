@@ -71,7 +71,7 @@
  *       1. Item 1.1
  *          1981\. This line started with a number.
  *       1. Item 1.2;
- *          This item consists of multiple lines
+ *          This item consists of multiple lines  
  *          with a forced line break (two spaces at the end of the last line).
  *  1. Item 2
  *         * Item 2.1; List styles can be mixed.

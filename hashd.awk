@@ -62,38 +62,17 @@ BEGIN {
 }
 
 Single && $0 !~ /^[[:space:]]*#/ {
-    if(Mode == "ul" || Mode == "ol") {
-        while(ListLevel > 1)
-            Buf = Buf "\n</" Open[ListLevel--] ">";
-        Out = Out tag(Mode, Buf "\n");
-    } else if(Mode == "pre") {
-        Out = Out end_pre(Buf);
-    } else if(Mode == "table") {
-        Out = Out end_table();
-    } else if(Mode == "blockquote") {
-        Out = Out end_blockquote(Buf);
-    } else if(Mode == "dl") {
-        Out = Out end_dl(Buf);
-        pop();
-        if(Dl_line) Out = Out filter(Dl_line);
-    } else {
-        Buf = trim(scrub(Buf));
-        if(Buf)
-            Out = Out tag(Mode, Buf);
-    }
-    Mode = "none";
-    Single = 0;
-    Buf = "";
-    Prev = "";
-}
-Single && /^[[:space:]]*#+/ {
-    sub(/^[[:space:]]*#+/,"");
-    Out = Out filter($0);
+    gsub(/\r/,"");
+	Out = Out filter("");
+	Single = 0;
 }
 !Single && /^[[:space:]]*##+/ {
-    sub(/^[[:space:]]*##+/,"");
     Single = 1;
     Mode = "p";
+}
+Single && /^[[:space:]]*#+/ {
+	gsub(/\r/,"");
+    sub(/^[[:space:]]*#+/,"");
     Out = Out filter($0);
 }
 

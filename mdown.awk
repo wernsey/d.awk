@@ -3,6 +3,8 @@
 # Markdown processor in AWK. It is simplified from d.awk
 # https://github.com/wernsey/d.awk
 #
+# ## License
+#
 # (c) 2016-2025 Werner Stoop
 # Copying and distribution of this file, with or without modification,
 # are permitted in any medium without royalty provided the copyright
@@ -45,9 +47,8 @@ BEGIN {
     HTML_tags = "^/?(a|abbr|b|blockquote|br|caption|cite|code|col|colgroup|column|dd|del|details|div|dl|dt|em|figcaption|figure|h[[:digit:]]+|hr|i|img|ins|li|mark|ol|p|pre|q|s|samp|small|span|strong|sub|summary|sup|table|tbody|td|tfoot|th|thead|tr|u|ul|var)$";
 }
 
-{gsub(/\r/,"");}
-
 {
+	gsub(/\r/,"");
     Out = Out filter($0);
 }
 

@@ -69,7 +69,7 @@
 #       1. Item 1.1
 #          1981\. This line started with a number.
 #       1. Item 1.2;
-#          This item consists of multiple lines
+#          This item consists of multiple lines  
 #          with a forced line break (two spaces at the end of the last line).
 #  1. Item 2
 #         * Item 2.1; List styles can be mixed.
@@ -427,7 +427,10 @@
 # Item One
 # :    Item one's description comes here
 # Item Two
-# :    Item two's description goes here
+# :    Item two's description goes here.
+#      This sentence is part of the same paragraph.
+#
+#      This sentence is a new paragraph.
 # :    You can have more than one definition
 #
 # Item Three
@@ -537,6 +540,10 @@
 # tincidunt ipsum, vitae suscipit arcu arcu id velit. Mauris auctor faucibus scelerisque.
 #
 # ------
+
+## * Regression Test - There was a bug that caused this line to appear twice in the output.
+#     If should be fixed now.
+#
 
 print("Hello World")
 
