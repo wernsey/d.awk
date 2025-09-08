@@ -567,6 +567,10 @@
 
 /* This comment is not processed because it doesn't start with the ** */
 
+/** * Regression Test - There ws a bug that caused this line to appear twice in the output.
+*     If should be fixed now.
+*/
+
 // Some text that should not be converted.
 int main(int argc, char *argv[]) {
     /** You can put comments

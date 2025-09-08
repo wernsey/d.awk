@@ -155,6 +155,7 @@ BEGIN {
     } else {
         Out = Out filter($0);
         Multi = 1;
+		next;
     }
 }
 
@@ -191,8 +192,8 @@ Multi {
     if(match($0,/[[:graph:]]/) && substr($0,RSTART,1)!="*")
         next;
     gsub(/^[[:space:]]*\*/, "", $0);
+	Out = Out filter($0); 
 }
-Multi { Out = Out filter($0); }
 
 # These are the rules for `///` single-line comments:
 Single && $0 !~ /\/\/\// {

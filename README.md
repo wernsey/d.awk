@@ -348,9 +348,12 @@ cleaner parser. I only discovered it long after I wrote my own Markdown parser.
 Things I'd like to add/fix in the future:
 
 - `wrap.awk` adds too much whitespace to code blocks...
-- [ ] It is known to not work with versions of **mawk** prior to 1.3.4  \
-    (The default Awk on Raspian as of this writing is version 1.3.3).
-    Please upgrade mawk, or use Gawk instead.
+- [ ] It is known to not work with versions of **mawk** prior to 1.3.4.
+    (The default Awk on some Debian-derived distros is version 1.3.3).
+    Please [upgrade mawk][mawk-134], or use Gawk instead.
+	- The issue seems that the older Mawk was created while POSIX was
+      still in draft and misses some regex features like character classes,
+	  i.e. `[:space:]`, which are quite important for `d.awk` (see [here][awk-libs])
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
 - Google's [code-prettify][] library is no longer maintained. I've been
@@ -366,3 +369,5 @@ Things I'd like to add/fix in the future:
 [highlightjs]: https://highlightjs.org/
 [syntaxhighlighter]: https://github.com/syntaxhighlighter/syntaxhighlighter
 [typograms]: https://github.com/google/typograms
+[mawk-134]: https://github.com/ThomasDickey/mawk-snapshots
+[awk-libs]: https://github.com/e36freak/awk-libs
