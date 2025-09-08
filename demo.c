@@ -567,7 +567,7 @@
 
 /* This comment is not processed because it doesn't start with the ** */
 
-/** * Regression Test - There ws a bug that caused this line to appear twice in the output.
+/** * Regression Test - There was a bug that caused this line to appear twice in the output.
 *     If should be fixed now.
 */
 

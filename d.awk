@@ -145,80 +145,37 @@ BEGIN {
 
 !Clean && !Multi && /\/\*\*/    {
     Mode = "p";
-    sub(/^.*\/\*\*/,"");
-    if(match($0,/\*\//)) {
-        sub(/\*\/.*/,"");
-        Out = Out filter($0);
-        Out = Out tag(Mode, scrub(Buf));
-        Buf = "";
-        Prev = "";
-    } else {
-        Out = Out filter($0);
-        Multi = 1;
-		next;
-    }
-}
-
-Multi && /\*\// {
-    gsub(/\*\/.*$/,"");
-    if(match($0, /^[[:space:]]*\*/))
-        Out = Out filter(substr($0, RSTART+RLENGTH));
-    if(Mode == "ul" || Mode == "ol") {
-        while(ListLevel > 1)
-            Buf = Buf "\n</" Open[ListLevel--] ">";
-        Out = Out tag(Mode, Buf "\n");
-    } else if(Mode == "pre") {
-        Out = Out end_pre(Buf);
-    } else if(Mode == "table") {
-        Out = Out end_table();
-    } else if(Mode == "blockquote") {
-        Out = Out end_blockquote(Buf);
-    } else if(Mode == "dl") {
-        Out = Out end_dl(Buf);
-        pop();
-        if(Dl_line) Out = Out filter(Dl_line);
-    } else {
-        Buf = trim(scrub(Buf));
-        if(Buf)
-            Out = Out tag(Mode, Buf);
-    }
-    Mode = "none";
-    Multi = 0;
-    Buf = "";
-    Prev = "";
+    sub(/^.*\/\*/,"");
+    Multi = 1;
 }
 Multi {
+    if(match($0, /\*\//)) {
+        gsub(/\*\/.*$/,"");
+        Multi = 0;
+    }
     gsub(/\r/, "", $0);
-    if(match($0,/[[:graph:]]/) && substr($0,RSTART,1)!="*")
-        next;
-    gsub(/^[[:space:]]*\*/, "", $0);
-	Out = Out filter($0); 
+    
+    gsub(/^[[:space:]]+/,"",$0);
+    if(substr($0,1,1)=="*") {
+        Out = Out filter(substr($0,2));
+    }
+    if(!Multi) {
+        # Pretend there's a blank line at the end of a comment...
+        Out = Out filter("");
+    }
 }
 
 # These are the rules for `///` single-line comments:
 Single && $0 !~ /\/\/\// {
-    if(Mode == "ul" || Mode == "ol") {
-        while(ListLevel > 1)
-            Buf = Buf "\n</" Open[ListLevel--] ">";
-        Out = Out tag(Mode, Buf "\n");
-    } else {
-        Buf = trim(scrub(Buf));
-        if(Buf)
-            Out = Out tag(Mode, Buf);
-    }
-    Mode = "none";
-    Single = 0;
-    Buf = "";
-    Prev = "";
+    Out = Out filter("");
+	Single = 0;
+}
+!Clean && !Single && !Multi && /\/\/\// {
+    Single = 1;
+    Mode = "p";
 }
 Single && /\/\/\// {
     sub(/.*\/\/\//,"");
-    Out = Out filter($0);
-}
-!Clean && !Single && !Multi && /\/\/\// {
-    sub(/.*\/\/\//,"");
-    Single = 1;
-    Mode = "p";
     Out = Out filter($0);
 }
 
