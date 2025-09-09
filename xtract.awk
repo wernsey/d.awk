@@ -10,28 +10,24 @@
 # without any warranty.
 
 !Multi && /\/\*\*/ {
-    sub(/^.*\/\*\*/,"");
-    if(match($0,/\*\//)) {
-        sub(/\*\/.*/,"");
-        print "\n" $0 "\n";
-    } else {
-        Multi = 1;
+    sub(/^.*\/\*/,"");
+    Multi = 1;
+}
+Multi {
+    if(match($0, /\*\//)) {
+        gsub(/\*\/.*$/,"");
+        Multi = 0;
+    }
+    gsub(/\r/, "", $0);
+    
+    gsub(/^[[:space:]]+/,"",$0);
+    if(substr($0,1,1)=="*") {
+        print substr($0,2);
+    } else if(!Multi) {
         print;
     }
 }
-Multi && /\*\// {
-    sub(/[[:space:]]*\*\/.*/,"");
-    if($0) {
-        sub(/^[[:space:]]*\*/,"");
-        print $0 "\n";
-    } else print "";
-    Multi = 0;
-}
-Multi && /^[[:space:]]*\*/ {
-    sub(/^[[:space:]]*\*/,"");
-    print;
-}
-#Multi { print; }
+
 
 # For `///` single-line comments:
 Single && $0 !~ /\/\/\// {
