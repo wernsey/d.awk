@@ -132,7 +132,7 @@ BEGIN {
     # disable them here, and use <dl> <dt> and <dd> tags instead
     if(DefLists=="") DefLists = 1;
 
-    Mode = (Clean)?"p":"none";
+    Mode = "p";
     ToC = ""; ToCLevel = 1;
     CSS = init_css(Css);
     for(i = 0; i < 128; i++)
@@ -144,7 +144,6 @@ BEGIN {
 }
 
 !Clean && !Multi && /\/\*\*/    {
-    Mode = "p";
     sub(/^.*\/\*/,"");
     Multi = 1;
 }
@@ -158,8 +157,7 @@ Multi {
     gsub(/^[[:space:]]+/,"",$0);
     if(substr($0,1,1)=="*") {
         Out = Out filter(substr($0,2));
-    }
-    if(!Multi) {
+    } else if(!Multi) {
         # Pretend there's a blank line at the end of a comment...
         Out = Out filter("");
     }

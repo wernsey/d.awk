@@ -415,7 +415,10 @@
 # Item One
 # :    Item one's description comes here
 # Item Two
-# :    Item two's description goes here
+# :    Item two's description goes here.
+#      This sentence is part of the same paragraph.
+#
+#      This sentence is a new paragraph.
 # :    You can have more than one definition
 #
 # Item Three

@@ -50,7 +50,7 @@ BEGIN {
     # disable them here, and use <dl> <dt> and <dd> tags instead
     if(DefLists=="") DefLists = 1;
 
-    Mode = (Clean)?"p":"none";
+    Mode = "p";
     ToC = ""; ToCLevel = 1;
     CSS = init_css(Css);
     for(i = 0; i < 128; i++)

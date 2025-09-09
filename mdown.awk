@@ -3,6 +3,14 @@
 # Markdown processor in AWK. It is simplified from d.awk
 # https://github.com/wernsey/d.awk
 #
+# ## References
+#
+# - <https://tools.ietf.org/html/rfc7764>
+# - <http://daringfireball.net/projects/markdown/syntax>
+# - <https://guides.github.com/features/mastering-markdown/>
+# - <http://fletcher.github.io/MultiMarkdown-4/syntax>
+# - <http://spec.commonmark.org>
+#
 # ## License
 #
 # (c) 2016-2025 Werner Stoop

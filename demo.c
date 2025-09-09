@@ -571,6 +571,16 @@
 *     If should be fixed now.
 */
 
+/**
+ * This is a sentence that will be part of the same 
+ * paragraph as the next comment. */
+
+int something = 123;
+
+/** Because of the way the previous comment ends and this one
+ * begins, their contents ends up in the same paragraph in the output. 
+ */
+
 // Some text that should not be converted.
 int main(int argc, char *argv[]) {
     /** You can put comments
