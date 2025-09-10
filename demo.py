@@ -168,7 +168,7 @@
 # This particular implementation doesn't care about blank lines
 # after the code block.
 #
-# GitHub-style code blocks:
+# GitHub-style fenced code blocks:
 # ```
 # //Some code, wrapped in ```
 #

@@ -197,16 +197,52 @@ END {
     "</script>";
 
     if(Pretty && HasPretty) {
+        tp++;
         print "<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/prettify.js\"></script>";
     }
     if(Mermaid && HasMermaid) {
+        tp++;
         print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
         print "<script>mermaid.initialize({ startOnLoad: true, theme:'" MermaidTheme "'});</script>";
     }
     if(Mathjax && HasMathjax) {
+		tp++;
         print "<script>MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]},svg:{fontCache:'global'}};</script>";
         print "<script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\" type=\"text/javascript\" id=\"MathJax-script\" async></script>";
     }
+	
+	print "<details class=\"credits no-print\">";
+	print "<summary>d.awk</summary>";
+	print "<p>Documentation generated with <a href=\"https://github.com/wernsey/d.awk\">d.awk</a></p>";
+	if(tp) {
+		print "<p>Third party libraries:</p>";
+		print "<table style=\"border-collapse: collapse;\">";
+		print "<tr><th>Library</th><th>Author</th><th>License</th></tr>";
+		if(Pretty && HasPretty) {
+			print "<tr>";
+			print "<td><a href=\"https://github.com/googlearchive/code-prettify\">code-prettify</a></td>";
+			print "<td>Google and <a href=\"https://github.com/googlearchive/code-prettify/graphs/contributors\">contributors</a></td>";
+			print "<td><a href=\"https://raw.githubusercontent.com/googlearchive/code-prettify/refs/heads/master/COPYING\">Apache 2.0</a></td>";
+			print "</tr>";
+		}
+		if(Mermaid && HasMermaid) {
+			print "<tr>";
+			print "<td><a href=\"https://mermaid.js.org/\">Mermaid</a></td>";
+			print "<td>Knut Sveidqvist and <a href=\"https://github.com/mermaid-js/mermaid/graphs/contributors\">contributors</a></td>";
+			print "<td><a href=\"https://raw.githubusercontent.com/mermaid-js/mermaid/refs/heads/develop/LICENSE\">MIT License</a></td>";
+			print "</tr>";
+		}
+		if(Mathjax && HasMathjax) {
+			print "<tr>";
+			print "<td><a href=\"https://www.mathjax.org/\">MathJax</a></td>";
+			print "<td>Davide P. Cervone and <a href=\"https://github.com/mathjax/MathJax-src/graphs/contributors\">contributors</a></td>";
+			print "<td><a href=\"https://raw.githubusercontent.com/mathjax/MathJax-src/refs/heads/master/LICENSE\">Apache 2.0</a></td>";
+			print "</tr>";
+		}
+		print "</table>";
+	}
+	print "</details>";
+	
     print "</body></html>"
 }
 
@@ -979,6 +1015,8 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css[".highlight"] = "color:var(--alt-color);background-color:var(--alt-background);";
     css["summary"] = "cursor:pointer;";
     css["ul.toc"] = "list-style-type:none;";
+    css["details.credits"] = "opacity: 0.7;font-size: xx-small; border-top: 1px solid var(--heading);margin-top: 4em;";
+    css["details.credits summary"] = "font-style: italic;";
 
     css["p.alert-head"] = "font-weight: bolder;";
     css["p.alert-head svg"] = "margin-right: 0.5em;";
