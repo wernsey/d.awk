@@ -180,7 +180,7 @@
  * ```
  *
  * You can use ```` ```lang ```` to specify a language, which can be syntax highlighted
- * Google's [code prettifier](https://github.com/google/code-prettify). The example
+ * through [highlight.js](https://highlightjs.org/). The example
  * below specifies ```` ```java ```` to syntax highlight a block of Java code.
  *
  * ```java
@@ -194,7 +194,7 @@
  *
  * Using ```` ```auto ```` causes the prettifier to guess the language.
  *
- * You can specify `-vPretty=0` on the command line to disable this functionality.
+ * You can specify `-vHighlight=0` on the command line to disable this functionality.
  *
  * Unfortunately, if you use C/C++ you have to escape your asterisks
  * like **int foo(int \*x, int \*y)** or this **int main(int argc, char \*argv[])**

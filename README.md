@@ -84,9 +84,9 @@ It also supports a number of extensions, mostly based on GitHub syntax:
 * ```` ``` ````-style code blocks
   * You can specify a language according to Github's [Syntax Highlighting][github-syntax]
     rules, for example ```` ```java ````
-    * It uses Google's [code-prettify][] library for the syntax highlighting.
+    * It uses [highlight.js][] library for the syntax highlighting.
     * This causes the generated HTML to pull in a third-party script.
-      It can be disabled by specifying `-vPretty=0` on the command line.
+      It can be disabled by specifying `-vHighlight=0` on the command line.
 * Tables, using the same syntax as [GitHub-flavoured markdown][github-tables].
 * [Mermaid][mermaid] diagrams are supported through the same ```` ```mermaid ```` syntax as
   in [GitHub-flavoured markdown][github-mermaid]
@@ -109,7 +109,7 @@ and test at the same time.
 
 [Awk]: https://en.wikipedia.org/wiki/AWK
 [Markdown]: https://en.wikipedia.org/wiki/Markdown
-[code-prettify]: https://github.com/google/code-prettify
+[highlight.js]: https://highlightjs.org/
 [github-syntax]: https://help.github.com/articles/creating-and-highlighting-code-blocks/#syntax-highlighting
 [MultiMarkdown]: http://fletcher.github.io/MultiMarkdown-4/syntax
 [github-mermaid]: https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/
@@ -179,9 +179,9 @@ to the script through Awk's `-v` command-line option:
   to create HTML documents from your project's README.md and related files.
 - `-v StyleSheet=style.css` to use a separate file as style sheet.
 - `-v TopLinks=1` to have links to the top of the document next to headers.
-- `-v Pretty=0` disable syntax highlighting.  \
+- `-v Highlight=0` disable syntax highlighting.  \
   By default a ```` ```lang ```` -style block will cause the library to pull in
-  Google's [code-prettify][] library to syntax highlight the block in the language `lang`.  \
+  the [highlight.js][] library to syntax highlight the block in the language `lang`.  \
   This switch disables that functionality.
 - `-vMermaid=0` disable [Mermaid][] diagrams.
 - `-vMathjax=0` disable [MathJax][] mathematical expression rendering.
@@ -271,7 +271,7 @@ To specify a different width, use `-v Width=60` from the command line.
 The license is officially the MIT-0 license (see the file [LICENSE](LICENSE) for
 details), but the individual scripts may be redistributed with this notice:
 
-    (c) 2016-2023 Werner Stoop
+    (c) 2016-2025 Werner Stoop
     Copying and distribution of this file, with or without modification,
     are permitted in any medium without royalty provided the copyright
     notice and this notice are preserved. This file is offered as-is,
@@ -356,18 +356,25 @@ Things I'd like to add/fix in the future:
 	  i.e. `[:space:]`, which are quite important for `d.awk` (see [here][awk-libs])
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
-- Google's [code-prettify][] library is no longer maintained. I've been
-    looking towards [highlightjs][] and [syntaxhighlighter][] as alternatives, 
-	but haven't made a decision yet.
 - The Mermaid styles doesn't change if dark-mode is toggled, but it turned
     out to be surprisingly difficult.
   - I've settled on using `'neutral'` as the default theme, which works in
     light and dark modes.
 - I've considered adding support for [typograms][] but it seems it is no longer
   being maintained.
+- I can look into simplifying how the highlight.js styles handle the switch between
+  light and dark modes by using a custom theme that uses CSS variables like the
+  od version did. You can look at how the existing
+  [themes](https://github.com/highlightjs/base16-highlightjs/tree/main/themes)
+  are written, and base something on those.
+- By default, [highlight.js][] only supports the languages in the _common_
+  section on its [download page](https://highlightjs.org/download). 
+  - Adding additional languages is as simple as adding a line line like this
+    to the HTML: `<script src="https://cdn.jsdelivr.net/.../awk.min.js"></script>`
+  - It should be easy to determine if a language is among the aditional
+    languages and add that line.
 
-[highlightjs]: https://highlightjs.org/
-[syntaxhighlighter]: https://github.com/syntaxhighlighter/syntaxhighlighter
+
 [typograms]: https://github.com/google/typograms
 [mawk-134]: https://github.com/ThomasDickey/mawk-snapshots
 [awk-libs]: https://github.com/e36freak/awk-libs

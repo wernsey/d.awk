@@ -28,7 +28,7 @@
 # - `-vCss=n` with n either 0 to disable CSS or 1 to enable; Default = 1
 # - `-vTopLinks=1` to have links to the top of the doc next to headers.
 # - `-vMaxWidth=1080px` specifies the Maximum width of the HTML output.
-# - `-vPretty=0` disable syntax highlighting with Google's [code prettify][].
+# - `-vHighlight=0` disable syntax highlighting with [highlight.js][highlightjs].
 # - `-vMermaid=0` disable [Mermaid][] diagrams.
 # - `-vMathjax=0` disable [MathJax][] mathematical rendering.
 # - `-vHideToCLevel=n` specifies the level of the ToC that should be collapsed by default.
@@ -50,7 +50,7 @@
 # or `-W traditional` settings with Gawk.
 # Mawk v1.3.4 worked correctly but v1.3.3 choked on it.
 #
-# [code prettify]: https://github.com/google/code-prettify
+# [highlightjs]: https://highlightjs.org/
 # [Mermaid]: https://github.com/mermaid-js/mermaid
 # [MathJax]: https://www.mathjax.org/
 # [github-tables]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables
@@ -114,7 +114,7 @@ BEGIN {
     if(Title== "") Title = "Documentation";
     if(Css== "") Css = 1;
 
-    if(Pretty== "") Pretty = 1;
+    if(Highlight== "") Highlight = 1;
     if(Mermaid== "") Mermaid = 1;
     if(MermaidTheme== "") MermaidTheme = "neutral";
     if(Mathjax=="") Mathjax = 1;
@@ -141,6 +141,12 @@ BEGIN {
 
     # Allowed HTML tags:
     HTML_tags = "^/?(a|abbr|b|blockquote|br|caption|cite|code|col|colgroup|column|dd|del|details|div|dl|dt|em|figcaption|figure|h[[:digit:]]+|hr|i|img|ins|li|mark|ol|p|pre|q|s|samp|small|span|strong|sub|summary|sup|table|tbody|td|tfoot|th|thead|tr|u|ul|var)$";
+	
+	# Languages supported by the default highlight.js distribution:
+	# (They're the languages in the 'Common' section of this page: https://highlightjs.org/download)
+	split("bash c cpp csharp css diff go graphql ini java javascript json kotlin less lua makefile " \
+	      "markdown objectivec perl php-template php plaintext python-repl python r ruby rust scss " \
+		  "shell sql swift typescript vbnet wasm xml yaml", LangsCommon);
 }
 
 !Clean && !Multi && /\/\*\*/    {
@@ -236,7 +242,7 @@ END {
             "    }\n" \
             "}\n" \
             "//-->\n</script>";
-    if(Pretty && HasPretty) {
+    if(Highlight && HasHighlight) {
         print "</head><body onload=\"setHljsTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')\">";
         print "<script>\n" \
               "function setHljsTheme(theme) {\n" \
@@ -275,7 +281,7 @@ END {
     "  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n" \
     "  document.querySelector('.dark-toggle').addEventListener('click', function () {\n" \
     "    document.body.classList.toggle(prefersDarkScheme.matches ? 'light-theme' : 'dark-theme');\n" \
-    ((Pretty && HasPretty) ? "    setHljsTheme(currentTheme());\n": "") \
+    ((Highlight && HasHighlight) ? "    setHljsTheme(currentTheme());\n": "") \
     "  });\n" \
     "  const copyCode = async (event) => { \n" \
     "    let elem = event.target;\n" \
@@ -293,7 +299,7 @@ END {
     "  };\n" \
     "  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n";
     
-    if(Pretty && HasPretty) {
+    if(Highlight && HasHighlight) {
         print "  let currentMode = '';\n" \
               "  window.onbeforeprint = () => { currentMode = currentTheme(); setHljsTheme('light'); };\n" \
               "  window.onafterprint = () => setHljsTheme(currentMode);";
@@ -301,7 +307,7 @@ END {
     
     print "})();\n</script>";
 
-    if(Pretty && HasPretty) {
+    if(Highlight && HasHighlight) {
         tp++;
         print "<link title=\"dark\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css\" disabled>";
         print "<link title=\"light\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-light.min.css\" disabled>";
@@ -326,7 +332,7 @@ END {
         print "<p>Third party libraries:</p>";
         print "<table style=\"border-collapse: collapse;\">";
         print "<tr><th>Library</th><th>Author</th><th>License</th></tr>";
-        if(Pretty && HasPretty) {
+        if(Highlight && HasHighlight) {
             print "<tr>";
             print "<td><a href=\"https://highlightjs.org/\">highlight.js</a></td>";
             print "<td>Ivan Sagalaev and <a href=\"https://github.com/highlightjs/highlight.js/blob/main/CONTRIBUTORS.md\">contributors</a></td>";
@@ -848,11 +854,16 @@ function end_pre(buffer,         res, plang, mmaid) {
                     mmaid = 1;
                     HasMermaid = 1;
                 } else {
-                    HasPretty = 1;
+                    HasHighlight = 1;
                     if(plang == "auto")
                         plang = "class=\"highlight\"";
-                    else
-                        plang = "class=\"highlight language-" plang "\"";
+                    else {
+						if(language_supported(plang)) {
+							plang = "class=\"highlight language-" plang "\"";
+						} else {
+							plang = "class=\"nohighlight\"";
+						}
+					}
                 }
             }
         }
@@ -1053,6 +1064,12 @@ function tag(t, body, attr) {
 }
 function itag(t, body) {
     return "<" t ">" body "</" t ">";
+}
+function language_supported(lang) {
+	for(l in LangsCommon) {
+		if(LangsCommon[l] == lang) return 1;
+	}
+	return 0;
 }
 function obfuscate(e,     r,i,t,o) {
     for(i = 1; i <= length(e); i++) {
