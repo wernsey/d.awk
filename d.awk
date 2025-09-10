@@ -166,7 +166,7 @@ Multi {
 # These are the rules for `///` single-line comments:
 Single && $0 !~ /\/\/\// {
     Out = Out filter("");
-	Single = 0;
+    Single = 0;
 }
 !Clean && !Single && !Multi && /\/\/\// {
     Single = 1;
@@ -209,25 +209,6 @@ END {
     if(StyleSheet)
         print "<link rel=\"stylesheet\" href=\"" StyleSheet "\">";
     else {
-        if(Pretty && HasPretty) {
-            CSS = CSS "\nbody {--str:#a636d8;--kwd:#4646ff;--com:#56a656;--lit:#e05e10;--typ:#0222ce;--pun:#595959;}\n"\
-                "@media screen { body.dark-theme {--str:#eb28df;--kwd:#f7d689;--com:#267b26;--lit: #ff8181;--typ:#228dff;--pun: #EEE;} }\n"\
-                "@media screen (prefers-color-scheme: dark) {\n"\
-                "  body.light-theme {--str:#a636d8;--kwd:#4646ff;--com:#56a656;--lit:#e05e10;--typ:#0222ce;--pun:#595959;}\n"\
-                "  body {--str:#eb28df;--kwd:#f7d689;--com:#267b26;--lit: #ff8181;--typ:#228dff;--pun: #EEE;}\n"\
-                "}\n"\
-                ".com { color:var(--com); } /* comment */\n"\
-                ".kwd, .tag { color:var(--kwd); } /* keyword, markup tag */\n"\
-                ".typ, .atn { color:var(--typ); } /* type name, html/xml attribute name */\n"\
-                ".str, .atv { color:var(--str); } /* string literal, html/xml attribute value */\n"\
-                ".lit, .dec, .var { color:var(--lit); } /* literal */\n"\
-                ".pun, .opn, .clo { color:var(--pun); } /* punctuation */\n"\
-                ".pln { color:var(--alt-color); } /* plain text */\n"\
-                "@media print, projection {\n"\
-                "  .com { font-style: italic }\n"\
-                "  .kwd, .typ, .tag { font-weight: bold }\n"\
-                "}";
-        }
         print "<style><!--\n" CSS "\n" \
         ".print-only {display:none}\n"\
         "@media print {\n"\
@@ -256,7 +237,18 @@ END {
             "}\n" \
             "//-->\n</script>";
     if(Pretty && HasPretty) {
-        print "</head><body onload=\"PR.prettyPrint()\">";
+        print "</head><body onload=\"setHljsTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')\">";
+        print "<script>\n" \
+              "function setHljsTheme(theme) {\n" \
+              "  if(theme=='dark') {\n" \
+              "    document.querySelector(\"link[title='dark']\").removeAttribute('disabled');\n" \
+              "    document.querySelector(\"link[title='light']\").setAttribute('disabled',true);\n" \
+              "  } else {\n" \
+              "    document.querySelector(\"link[title='light']\").removeAttribute('disabled');\n" \
+              "    document.querySelector(\"link[title='dark']\").setAttribute('disabled',true);\n" \
+              "  }\n" \
+              "}\n" \
+              "</script>"
     } else {
         print "</head><body>";
     }
@@ -279,9 +271,11 @@ END {
 
     print "<script>\n"\
     "(() => {\n" \
+    "  let currentTheme = () => (!prefersDarkScheme.matches && !document.body.classList.contains('dark-theme')) || (prefersDarkScheme.matches && document.body.classList.contains('light-theme')) ? 'light' : 'dark';\n"\
     "  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n" \
     "  document.querySelector('.dark-toggle').addEventListener('click', function () {\n" \
     "    document.body.classList.toggle(prefersDarkScheme.matches ? 'light-theme' : 'dark-theme');\n" \
+    ((Pretty && HasPretty) ? "    setHljsTheme(currentTheme());\n": "") \
     "  });\n" \
     "  const copyCode = async (event) => { \n" \
     "    let elem = event.target;\n" \
@@ -297,57 +291,66 @@ END {
     "      console.error(error.message);\n" \
     "    }\n" \
     "  };\n" \
-    "  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n" \
-    "})();\n" \
-    "</script>";
+    "  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n";
+    
+    if(Pretty && HasPretty) {
+        print "  let currentMode = '';\n" \
+              "  window.onbeforeprint = () => { currentMode = currentTheme(); setHljsTheme('light'); };\n" \
+              "  window.onafterprint = () => setHljsTheme(currentMode);";
+    }   
+    
+    print "})();\n</script>";
 
-	if(Pretty && HasPretty) {
+    if(Pretty && HasPretty) {
         tp++;
-		print "<script src=\"https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/prettify.js\"></script>";
+        print "<link title=\"dark\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css\" disabled>";
+        print "<link title=\"light\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-light.min.css\" disabled>";
+        print "<script src=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js\"></script>";
+        print "<script>hljs.highlightAll();</script>";
     }
     if(Mermaid && HasMermaid) {
         tp++;
-		print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
+        print "<script src=\"https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js\"></script>";
         print "<script>mermaid.initialize({ startOnLoad: true, theme:'" MermaidTheme "'});</script>";
     }
     if(Mathjax && HasMathjax) {
-		tp++;
+        tp++;
         print "<script>MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]},svg:{fontCache:'global'}};</script>";
         print "<script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\" type=\"text/javascript\" id=\"MathJax-script\" async></script>";
     }
-	
-	print "<details class=\"credits no-print\">";
-	print "<summary>d.awk</summary>";
-	print "<p>Documentation generated with <a href=\"https://github.com/wernsey/d.awk\">d.awk</a></p>";
-	if(tp) {
-		print "<p>Third party libraries:</p>";
-		print "<table style=\"border-collapse: collapse;\">";
-		print "<tr><th>Library</th><th>Author</th><th>License</th></tr>";
-		if(Pretty && HasPretty) {
-			print "<tr>";
-			print "<td><a href=\"https://github.com/googlearchive/code-prettify\">code-prettify</a></td>";
-			print "<td>Google and <a href=\"https://github.com/googlearchive/code-prettify/graphs/contributors\">contributors</a></td>";
-			print "<td><a href=\"https://raw.githubusercontent.com/googlearchive/code-prettify/refs/heads/master/COPYING\">Apache 2.0</a></td>";
-			print "</tr>";
-		}
-		if(Mermaid && HasMermaid) {
-			print "<tr>";
-			print "<td><a href=\"https://mermaid.js.org/\">Mermaid</a></td>";
-			print "<td>Knut Sveidqvist and <a href=\"https://github.com/mermaid-js/mermaid/graphs/contributors\">contributors</a></td>";
-			print "<td><a href=\"https://raw.githubusercontent.com/mermaid-js/mermaid/refs/heads/develop/LICENSE\">MIT License</a></td>";
-			print "</tr>";
-		}
-		if(Mathjax && HasMathjax) {
-			print "<tr>";
-			print "<td><a href=\"https://www.mathjax.org/\">MathJax</a></td>";
-			print "<td>Davide P. Cervone and <a href=\"https://github.com/mathjax/MathJax-src/graphs/contributors\">contributors</a></td>";
-			print "<td><a href=\"https://raw.githubusercontent.com/mathjax/MathJax-src/refs/heads/master/LICENSE\">Apache 2.0</a></td>";
-			print "</tr>";
-		}
-		print "</table>";
-	}
-	print "</details>";
-	
+    
+    print "<details class=\"credits no-print\">";
+    print "<summary>d.awk</summary>";
+    print "<p>Documentation generated with <a href=\"https://github.com/wernsey/d.awk\">d.awk</a></p>";
+    if(tp) {
+        print "<p>Third party libraries:</p>";
+        print "<table style=\"border-collapse: collapse;\">";
+        print "<tr><th>Library</th><th>Author</th><th>License</th></tr>";
+        if(Pretty && HasPretty) {
+            print "<tr>";
+            print "<td><a href=\"https://highlightjs.org/\">highlight.js</a></td>";
+            print "<td>Ivan Sagalaev and <a href=\"https://github.com/highlightjs/highlight.js/blob/main/CONTRIBUTORS.md\">contributors</a></td>";
+            print "<td><a href=\"https://raw.githubusercontent.com/highlightjs/highlight.js/refs/heads/main/LICENSE\">BSD 3-Clause</a></td>";
+            print "</tr>";
+        }
+        if(Mermaid && HasMermaid) {
+            print "<tr>";
+            print "<td><a href=\"https://mermaid.js.org/\">Mermaid</a></td>";
+            print "<td>Knut Sveidqvist and <a href=\"https://github.com/mermaid-js/mermaid/graphs/contributors\">contributors</a></td>";
+            print "<td><a href=\"https://raw.githubusercontent.com/mermaid-js/mermaid/refs/heads/develop/LICENSE\">MIT License</a></td>";
+            print "</tr>";
+        }
+        if(Mathjax && HasMathjax) {
+            print "<tr>";
+            print "<td><a href=\"https://www.mathjax.org/\">MathJax</a></td>";
+            print "<td>Davide P. Cervone and <a href=\"https://github.com/mathjax/MathJax-src/graphs/contributors\">contributors</a></td>";
+            print "<td><a href=\"https://raw.githubusercontent.com/mathjax/MathJax-src/refs/heads/master/LICENSE\">Apache 2.0</a></td>";
+            print "</tr>";
+        }
+        print "</table>";
+    }
+    print "</details>";
+    
     print "</body></html>"
 }
 
@@ -847,15 +850,16 @@ function end_pre(buffer,         res, plang, mmaid) {
                 } else {
                     HasPretty = 1;
                     if(plang == "auto")
-                        plang = "class=\"prettyprint\"";
+                        plang = "class=\"highlight\"";
                     else
-                        plang = "class=\"prettyprint lang-" plang "\"";
+                        plang = "class=\"highlight language-" plang "\"";
                 }
             }
         }
         if(mmaid && Mermaid)
             res = tag("div", buffer, "class=\"mermaid\"");
         else {
+			if(!plang) plang = "class=\"nohighlight\"";
             res = tag("pre", tag("code", escape(buffer), plang));
             if(Css)
                 res = tag("div", tag("div", tag("span", "Copied","class=\"code-message hidden\"") tag("span", svg("copy") ,"class=\"code-button\""), "class=\"code-toolbar no-print\"") res, "class=\"code-block\"");
@@ -1097,7 +1101,8 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["strong,b"] = "color:var(--color)";
     css["code"] = "color:var(--alt-color);font-weight:bold;";
     css["blockquote"] = "margin-left:1em;color:var(--alt-color);border-left:0.2em solid var(--alt-color);padding:0.25em 0.5em;overflow-x:auto;";
-    css["pre"] = "color:var(--alt-color);background:var(--alt-background);line-height:1.25em;margin:0.25em 0.5em;padding:0.75em;overflow-x:auto;";
+    css["pre:has(code.nohighlight)"] = "color:var(--alt-color);background:var(--alt-background);line-height:22px;margin:0.25em 0.5em;padding:1em;overflow-x:auto;";
+	css["pre code.hljs"] = "margin:0.25em 0.5em -1em;"
     css["table.dawk-ex"] = "border-collapse:collapse;margin:0.5em;";
     css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid var(--heading);";
     css["th.dawk-ex"] = "color:var(--heading);border:1px solid var(--heading);border-bottom:2px solid var(--heading);";
@@ -1197,9 +1202,9 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     for(i = 0; i<=255; i++)_hex[sprintf("%02X",i)]=i;
 
     # Light theme colors:
-    lt = "--color: #263053; --alt-color: #16174c; --heading: #2A437E; --background: #FDFDFD; --alt-background: #F9FAFF;";
+    lt = "--color: #263053; --alt-color: #383A42; --heading: #2A437E; --background: #FDFDFD; --alt-background: #FAFAFA;";
     # Dark theme colors:
-    dt = "--color: #E9ECFF; --alt-color: #9DAFE6; --heading: #6C89E8; --background: #13192B; --alt-background: #232A42;";
+    dt = "--color: #E9ECFF; --alt-color: #ABB2BF; --heading: #6C89E8; --background: #13192B; --alt-background: #282C34;";
 
     # Print theme: Same as light theme...
     pt = lt;
@@ -1216,6 +1221,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
         "}\n" \
         "@media print {\n" \
         "  body  { " pt " }\n" \
+		"  pre code.highlight.hljs {overflow-x:hidden;}" \
         "}";
 
     for(k in css)
