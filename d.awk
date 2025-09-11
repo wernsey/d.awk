@@ -140,13 +140,13 @@ BEGIN {
 
     # Allowed HTML tags:
     HTML_tags = "^/?(a|abbr|b|blockquote|br|caption|cite|code|col|colgroup|column|dd|del|details|div|dl|dt|em|figcaption|figure|h[[:digit:]]+|hr|i|img|ins|li|mark|ol|p|pre|q|s|samp|small|span|strong|sub|summary|sup|table|tbody|td|tfoot|th|thead|tr|u|ul|var)$";
-    
+
     # Languages supported by the default highlight.js distribution:
     # (They're the languages in the 'Common' section of this page: https://highlightjs.org/download)
     split("bash c cpp csharp css diff go graphql ini java javascript json kotlin less lua makefile " \
           "markdown objectivec perl php-template php plaintext python-repl python r ruby rust scss " \
           "shell sql swift typescript vbnet wasm xml yaml", LangsCommon);
-    
+
     # Languages supported by highlight.js for which additional files are needed:
     split("1c abnf accesslog actionscript ada angelscript apache applescript arcade arduino armasm " \
         "asciidoc aspectj autohotkey autoit avrasm awk axapta basic bnf brainfuck cal capnproto " \
@@ -173,7 +173,7 @@ Multi {
         Multi = 0;
     }
     gsub(/\r/, "", $0);
-    
+
     gsub(/^[[:space:]]+/,"",$0);
     if(substr($0,1,1)=="*") {
         Out = Out filter(substr($0,2));
@@ -204,7 +204,7 @@ Clean {
 !Title { Title = FILENAME; }
 
 END {
-	if(Title == "-") Title = "Documentation";
+    if(Title == "-") Title = "Documentation";
     if(Mode == "ul" || Mode == "ol") {
         while(ListLevel > 1)
             Buf = Buf "\n</" Open[ListLevel--] ">";
@@ -236,12 +236,47 @@ END {
         "@media print {\n"\
         "  .no-print { display: none !important;}\n"\
         "  .print-only {display:block;}\n" \
-        "  code {font-size: smaller;}\n"\
         "  pre {overflow-x: clip !important;}\n"\
-        "}\n"\
-        "--></style>";
+		"  a {text-decoration: none;}\n" \
+        "}";
+
+        if(Highlight && HasHighlight) {
+            print \
+              "/* These colors come from the Atom One Dark and Light themes by Daniel Gamage\n" \
+              " * from the original highlight.js distribution:\n" \
+              " * https://github.com/highlightjs/highlight.js/blob/main/src/styles/atom-one-dark.css\n" \
+              " * https://github.com/highlightjs/highlight.js/blob/main/src/styles/atom-one-light.css */\n" \
+              "@media print {\n" \
+              "  body {--com:#a0a1a7;--kwd:#a626a4;--nam:#e45649;--lit:#0184bb;--str:#50a14f;--var:#986801;--sym:#4078f2;--typ:#c18401;}\n" \
+              "}\n" \
+              "@media screen {\n" \
+              "  body {--com:#a0a1a7;--kwd:#a626a4;--nam:#e45649;--lit:#0184bb;--str:#50a14f;--var:#986801;--sym:#4078f2;--typ:#c18401;}\n" \
+              "  body.dark-theme {--com:#5c6370;--kwd:#c678dd;--nam:#e06c75;--lit:#56b6c2;--str:#98c379;--var:#d19a66;--sym:#61aeee;--typ:#e6c07b;}\n" \
+              "  @media  (prefers-color-scheme: dark) {\n" \
+              "    body.light-theme {--com:#a0a1a7;--kwd:#a626a4;--nam:#e45649;--lit:#0184bb;--str:#50a14f;--var:#986801;--sym:#4078f2;--typ:#c18401;}\n" \
+              "    body {--com:#5c6370;--kwd:#c678dd;--nam:#e06c75;--lit:#56b6c2;--str:#98c379;--var:#d19a66;--sym:#61aeee;--typ:#e6c07b;}\n" \
+              "  }\n" \
+              "}";
+            print \
+              "pre code.hljs {display:block;overflow-x: auto;padding: 1em;}\n" \
+              "code.hljs {padding: 3px 5px}\n" \
+              ".hljs {color: var(--alt-color);background: var(--alt-background)}\n" \
+              ".hljs-comment,.hljs-quote {color: var(--com);font-style: italic}\n" \
+              ".hljs-doctag,.hljs-keyword,.hljs-formula {color:var(--kwd);}\n" \
+              ".hljs-section,.hljs-name,.hljs-selector-tag,.hljs-deletion,.hljs-subst {color: var(--nam);}\n" \
+              ".hljs-literal {color: var(--lit);}\n" \
+              ".hljs-string,.hljs-regexp,.hljs-addition,.hljs-attribute,.hljs-meta .hljs-string {color: var(--str);}\n" \
+              ".hljs-attr,.hljs-variable,.hljs-template-variable,.hljs-type,.hljs-selector-class,.hljs-selector-attr,.hljs-selector-pseudo,.hljs-number {color: var(--var);}\n" \
+              ".hljs-symbol,.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-title {color: var(--sym);}\n" \
+              ".hljs-built_in,.hljs-title.class_,.hljs-class .hljs-title {color: var(--typ);}\n" \
+              ".hljs-emphasis {font-style: italic}\n" \
+              ".hljs-strong {font-weight: bold}\n" \
+              ".hljs-link {text-decoration: underline}";
+        }
+
+        print "--></style>";
     }
-    if(ToC && match(Out, /!\[toc[-+]?\]/))
+    if(ToC && match(Out, /!\[toc[-+]?\]/)) {
         print "<script><!--\n" \
             "function toggle_toc(n) {\n" \
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
@@ -258,22 +293,8 @@ END {
             "    }\n" \
             "}\n" \
             "//-->\n</script>";
-    if(Highlight && HasHighlight) {
-        print "</head><body onload=\"setHljsTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')\">";
-        print "<script>\n" \
-              "function setHljsTheme(theme) {\n" \
-              "  if(theme=='dark') {\n" \
-              "    document.querySelector(\"link[title='dark']\").removeAttribute('disabled');\n" \
-              "    document.querySelector(\"link[title='light']\").setAttribute('disabled',true);\n" \
-              "  } else {\n" \
-              "    document.querySelector(\"link[title='light']\").removeAttribute('disabled');\n" \
-              "    document.querySelector(\"link[title='dark']\").setAttribute('disabled',true);\n" \
-              "  }\n" \
-              "}\n" \
-              "</script>"
-    } else {
-        print "</head><body>";
     }
+    print "</head><body>";
 
     if(Css)
         print "<a class=\"dark-toggle no-print\">\n" svg("moon", "", 12) "\n&nbsp;Toggle Dark Mode</a>\n";
@@ -297,7 +318,6 @@ END {
     "  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');\n" \
     "  document.querySelector('.dark-toggle').addEventListener('click', function () {\n" \
     "    document.body.classList.toggle(prefersDarkScheme.matches ? 'light-theme' : 'dark-theme');\n" \
-    ((Highlight && HasHighlight) ? "    setHljsTheme(currentTheme());\n": "") \
     "  });\n" \
     "  const copyCode = async (event) => { \n" \
     "    let elem = event.target;\n" \
@@ -308,25 +328,16 @@ END {
     "      await navigator.clipboard.writeText(code);          \n" \
     "      let msg = elem.querySelector('.code-message');\n" \
     "      msg.classList.remove('hidden');\n" \
-    "      setTimeout(()=>msg.classList.add('hidden'), 500);           \n" \
+    "      setTimeout(()=>msg.classList.add('hidden'), 500);\n" \
     "    } catch (error) {\n" \
     "      console.error(error.message);\n" \
     "    }\n" \
     "  };\n" \
-    "  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n";
-    
-    if(Highlight && HasHighlight) {
-        print "  let currentMode = '';\n" \
-              "  window.onbeforeprint = () => { currentMode = currentTheme(); setHljsTheme('light'); };\n" \
-              "  window.onafterprint = () => setHljsTheme(currentMode);";
-    }   
-    
-    print "})();\n</script>";
+    "  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n" \
+    "})();\n</script>";
 
     if(Highlight && HasHighlight) {
         tp++;
-        print "<link title=\"dark\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css\" disabled>";
-        print "<link title=\"light\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-light.min.css\" disabled>";
         print "<script src=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js\"></script>";
         for(lang in AdditionalLangs) {
             print "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/" lang ".min.js\"></script>";
@@ -343,7 +354,7 @@ END {
         print "<script>MathJax={tex:{inlineMath:[['$','$'],['\\\\(','\\\\)']]},svg:{fontCache:'global'}};</script>";
         print "<script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js\" type=\"text/javascript\" id=\"MathJax-script\" async></script>";
     }
-    
+
     print "<details class=\"credits no-print\">";
     print "<summary>d.awk</summary>";
     print "<p>Documentation generated with <a href=\"https://github.com/wernsey/d.awk\">d.awk</a></p>";
@@ -375,7 +386,7 @@ END {
         print "</table>";
     }
     print "</details>";
-    
+
     print "</body></html>"
 }
 
@@ -872,7 +883,7 @@ function end_pre(buffer,         res, plang, mmaid) {
                 if(plang == "mermaid") {
                     mmaid = 1;
                     HasMermaid = 1;
-                } else {
+                } else if(Highlight) {
                     HasHighlight = 1;
                     if(plang == "auto")
                         plang = "class=\"highlight\"";
@@ -883,6 +894,8 @@ function end_pre(buffer,         res, plang, mmaid) {
                             plang = "class=\"nohighlight\"";
                         }
                     }
+                } else {
+                    plang = "class=\"nohighlight\"";
                 }
             }
         }
@@ -1051,7 +1064,7 @@ function fix_footnotes(st,         r,p,n,i,d,fn,fc) {
     }
     for(i=1;i<=fc;i++)
         footnotes = footnotes "<li id=\"footnote-" i "\">" Footnote[footname[i]] \
-            "<a title=\"Return to Document\" class=\"footnote-back\" href=\"#footnote-pos-" i \
+            "<a title=\"Return to Document\" class=\"footnote-back no-print\" href=\"#footnote-pos-" i \
             "\">&nbsp;&nbsp;&#8630;&nbsp;Back</a></li>\n";
     return r st;
 }
@@ -1089,7 +1102,7 @@ function language_supported(lang) {
         if(LangsCommon[l] == lang) return 1;
     }
     for(l in LangsExtra) {
-        if(LangsExtra[l] == lang) { 
+        if(LangsExtra[l] == lang) {
             AdditionalLangs[lang]++;
             return 1;
         }
@@ -1126,10 +1139,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["h4"] = "border-bottom:1px solid var(--heading)";
     css["p"] = "margin:0.5em 0.1em;"
     css["hr"] = "background:var(--color);height:1px;border:0;"
-    css["a.normal, a.toc, a.footnote, a.footnote-back"] = "color:var(--alt-color);";
-    #css["a.normal:visited"] = "color:var(--heading);";
-    #css["a.normal:active"] = "color:var(--heading);";
-    css["a.normal:hover, a.toc:hover"] = "color:var(--alt-color);";
+    css["a"] = "color:var(--alt-color);";
     css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;";
     css["a.header svg"] = "opacity:0;";
     css["a.header:hover svg"] = "opacity:1;";
@@ -1142,7 +1152,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["a.footnote-back"] = "text-decoration:initial;font-size:x-small;font-style:italic;";
     css["strong,b"] = "color:var(--color)";
     css["code"] = "color:var(--alt-color);font-weight:bold;";
-    css["blockquote"] = "margin-left:1em;color:var(--alt-color);border-left:0.2em solid var(--alt-color);padding:0.25em 0.5em;overflow-x:auto;";
+    css["blockquote"] = "margin: 0.25em 0.5em;color:var(--alt-color);border-left:0.2em solid var(--alt-color);padding:0.25em 0.5em;overflow-x:auto;";
     css["pre:has(code.nohighlight)"] = "color:var(--alt-color);background:var(--alt-background);line-height:22px;margin:0.25em 0.5em;padding:1em;overflow-x:auto;";
     css["pre code.hljs"] = "margin:0.25em 0.5em -1em;"
     css["table.dawk-ex"] = "border-collapse:collapse;margin:0.5em;";
@@ -1244,9 +1254,9 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     for(i = 0; i<=255; i++)_hex[sprintf("%02X",i)]=i;
 
     # Light theme colors:
-    lt = "--color: #263053; --alt-color: #383A42; --heading: #2A437E; --background: #FDFDFD; --alt-background: #FAFAFA;";
+    lt = "--color: #263053; --alt-color: #383A42; --heading: #394970; --background: #FDFDFD; --alt-background: #FAFAFA;";
     # Dark theme colors:
-    dt = "--color: #E9ECFF; --alt-color: #ABB2BF; --heading: #6C89E8; --background: #13192B; --alt-background: #282C34;";
+    dt = "--color: #BABFDB; --alt-color: #ABB2BF; --heading: #919DC5; --background: #141825; --alt-background: #282C34;";
 
     # Print theme: Same as light theme...
     pt = lt;

@@ -358,17 +358,10 @@ Things I'd like to add/fix in the future:
   other Awks (mawk, nawk etc) to just make sure it's portable.
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
-- The Mermaid styles doesn't change if dark-mode is toggled, and it turned
-    out to be surprisingly difficult to fix.
-  - I've settled on using `'neutral'` as the default theme, which works in
-    light and dark modes.
 - I've considered adding support for [typograms][] but it seems it is no longer
   being maintained.
-- I can look into simplifying how the highlight.js styles handle the switch between
-  light and dark modes by using a custom theme that uses CSS variables like the
-  od version did. You can look at how the existing
-  [themes](https://github.com/highlightjs/base16-highlightjs/tree/main/themes)
-  are written, and base something on those.
+- When printing, I'd prefer the text in <code> blocks be smaller, but I
+  wasn't satisfied with any of my attempts to fix it.
 
 [typograms]: https://github.com/google/typograms
 [mawk-134]: https://github.com/ThomasDickey/mawk-snapshots
