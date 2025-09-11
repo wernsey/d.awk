@@ -354,10 +354,12 @@ Things I'd like to add/fix in the future:
 	- The issue seems that the older Mawk was created while POSIX was
       still in draft and misses some regex features like character classes,
 	  i.e. `[:space:]`, which are quite important for `d.awk` (see [here][awk-libs])
+- [ ] Speaking of which, I've been using gawk mostly and I should try using the
+  other Awks (mawk, nawk etc) to just make sure it's portable.
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
-- The Mermaid styles doesn't change if dark-mode is toggled, but it turned
-    out to be surprisingly difficult.
+- The Mermaid styles doesn't change if dark-mode is toggled, and it turned
+    out to be surprisingly difficult to fix.
   - I've settled on using `'neutral'` as the default theme, which works in
     light and dark modes.
 - I've considered adding support for [typograms][] but it seems it is no longer
@@ -367,13 +369,12 @@ Things I'd like to add/fix in the future:
   od version did. You can look at how the existing
   [themes](https://github.com/highlightjs/base16-highlightjs/tree/main/themes)
   are written, and base something on those.
-- By default, [highlight.js][] only supports the languages in the _common_
-  section on its [download page](https://highlightjs.org/download). 
-  - Adding additional languages is as simple as adding a line line like this
-    to the HTML: `<script src="https://cdn.jsdelivr.net/.../awk.min.js"></script>`
-  - It should be easy to determine if a language is among the aditional
-    languages and add that line.
-
+- Awk has a `FILENAME` variable that tells you which file is being processed.
+  - I should use it to set the `Title` variable if it's not set, rather than 
+    defaulting to "Documentation"
+  - Unfortunately it's not available in the `BEGIN` block, so you should do
+    something like `FNR==1 && !Title {Title = FILENAME;}`
+- The _footnote_ hyperlinks have the wrong color...
 
 [typograms]: https://github.com/google/typograms
 [mawk-134]: https://github.com/ThomasDickey/mawk-snapshots

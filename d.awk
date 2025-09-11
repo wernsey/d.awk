@@ -28,7 +28,7 @@
 # - `-vCss=n` with n either 0 to disable CSS or 1 to enable; Default = 1
 # - `-vTopLinks=1` to have links to the top of the doc next to headers.
 # - `-vMaxWidth=1080px` specifies the Maximum width of the HTML output.
-# - `-vHighlight=0` disable syntax highlighting with [highlight.js][highlightjs].
+# - `-vHighlight=0` disable syntax highlighting with [highlight.js][].
 # - `-vMermaid=0` disable [Mermaid][] diagrams.
 # - `-vMathjax=0` disable [MathJax][] mathematical rendering.
 # - `-vHideToCLevel=n` specifies the level of the ToC that should be collapsed by default.
@@ -50,7 +50,7 @@
 # or `-W traditional` settings with Gawk.
 # Mawk v1.3.4 worked correctly but v1.3.3 choked on it.
 #
-# [highlightjs]: https://highlightjs.org/
+# [highlight.js]: https://highlightjs.org/
 # [Mermaid]: https://github.com/mermaid-js/mermaid
 # [MathJax]: https://www.mathjax.org/
 # [github-tables]: https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables
@@ -141,12 +141,27 @@ BEGIN {
 
     # Allowed HTML tags:
     HTML_tags = "^/?(a|abbr|b|blockquote|br|caption|cite|code|col|colgroup|column|dd|del|details|div|dl|dt|em|figcaption|figure|h[[:digit:]]+|hr|i|img|ins|li|mark|ol|p|pre|q|s|samp|small|span|strong|sub|summary|sup|table|tbody|td|tfoot|th|thead|tr|u|ul|var)$";
-	
-	# Languages supported by the default highlight.js distribution:
-	# (They're the languages in the 'Common' section of this page: https://highlightjs.org/download)
-	split("bash c cpp csharp css diff go graphql ini java javascript json kotlin less lua makefile " \
-	      "markdown objectivec perl php-template php plaintext python-repl python r ruby rust scss " \
-		  "shell sql swift typescript vbnet wasm xml yaml", LangsCommon);
+    
+    # Languages supported by the default highlight.js distribution:
+    # (They're the languages in the 'Common' section of this page: https://highlightjs.org/download)
+    split("bash c cpp csharp css diff go graphql ini java javascript json kotlin less lua makefile " \
+          "markdown objectivec perl php-template php plaintext python-repl python r ruby rust scss " \
+          "shell sql swift typescript vbnet wasm xml yaml", LangsCommon);
+    
+    # Languages supported by highlight.js for which additional files are needed:
+    split("1c abnf accesslog actionscript ada angelscript apache applescript arcade arduino armasm " \
+        "asciidoc aspectj autohotkey autoit avrasm awk axapta basic bnf brainfuck cal capnproto " \
+        "ceylon clean clojure clojure-repl cmake coffeescript coq cos crmsh crystal csp d dart " \
+        "delphi django dns dockerfile dos dsconfig dts dust ebnf elixir elm erb erlang erlang-repl " \
+        "excel fix flix fortran fsharp gams gauss gcode gherkin glsl gml golo gradle groovy haml " \
+        "handlebars haskell haxe hsp http hy inform7 irpf90 isbl jboss-cli julia julia-repl lasso " \
+        "latex ldif leaf lisp livecodeserver livescript llvm lsl mathematica matlab maxima mel " \
+        "mercury mipsasm mizar mojolicious monkey moonscript n1ql nestedtext nginx nim nix " \
+        "node-repl nsis ocaml openscad oxygene parser3 pf pgsql pony powershell processing profile " \
+        "prolog properties protobuf puppet purebasic q qml reasonml rib roboconf routeros rsl " \
+        "ruleslanguage sas scala scheme scilab smali smalltalk sml sqf stan stata step21 stylus " \
+        "subunit taggerscript tap tcl thrift tp twig vala vbscript vbscript-html verilog vhdl vim " \
+        "wren x86asm xl xquery zephir", LangsExtra);
 }
 
 !Clean && !Multi && /\/\*\*/    {
@@ -179,8 +194,8 @@ Single && $0 !~ /\/\/\// {
     Mode = "p";
 }
 Single && /\/\/\// {
-    sub(/.*\/\/\//,"");
-    Out = Out filter($0);
+    st = substr($0, match($0, /\/\/\//) + 3);
+    Out = Out filter(st);
 }
 
 Clean {
@@ -312,7 +327,10 @@ END {
         print "<link title=\"dark\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-dark.min.css\" disabled>";
         print "<link title=\"light\" rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/atom-one-light.min.css\" disabled>";
         print "<script src=\"https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js\"></script>";
-        print "<script>hljs.highlightAll();</script>";
+        for(lang in AdditionalLangs) {
+            print "<script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/" lang ".min.js\"></script>";
+        }
+        print "<script>hljs.configure({cssSelector:'pre code.highlight'});hljs.highlightAll();</script>";
     }
     if(Mermaid && HasMermaid) {
         tp++;
@@ -858,19 +876,19 @@ function end_pre(buffer,         res, plang, mmaid) {
                     if(plang == "auto")
                         plang = "class=\"highlight\"";
                     else {
-						if(language_supported(plang)) {
-							plang = "class=\"highlight language-" plang "\"";
-						} else {
-							plang = "class=\"nohighlight\"";
-						}
-					}
+                        if(language_supported(plang)) {
+                            plang = "class=\"highlight language-" plang "\"";
+                        } else {
+                            plang = "class=\"nohighlight\"";
+                        }
+                    }
                 }
             }
         }
         if(mmaid && Mermaid)
             res = tag("div", buffer, "class=\"mermaid\"");
         else {
-			if(!plang) plang = "class=\"nohighlight\"";
+            if(!plang) plang = "class=\"nohighlight\"";
             res = tag("pre", tag("code", escape(buffer), plang));
             if(Css)
                 res = tag("div", tag("div", tag("span", "Copied","class=\"code-message hidden\"") tag("span", svg("copy") ,"class=\"code-button\""), "class=\"code-toolbar no-print\"") res, "class=\"code-block\"");
@@ -1066,10 +1084,16 @@ function itag(t, body) {
     return "<" t ">" body "</" t ">";
 }
 function language_supported(lang) {
-	for(l in LangsCommon) {
-		if(LangsCommon[l] == lang) return 1;
-	}
-	return 0;
+    for(l in LangsCommon) {
+        if(LangsCommon[l] == lang) return 1;
+    }
+    for(l in LangsExtra) {
+        if(LangsExtra[l] == lang) { 
+            AdditionalLangs[lang]++;
+            return 1;
+        }
+    }
+    return 0;
 }
 function obfuscate(e,     r,i,t,o) {
     for(i = 1; i <= length(e); i++) {
@@ -1119,7 +1143,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["code"] = "color:var(--alt-color);font-weight:bold;";
     css["blockquote"] = "margin-left:1em;color:var(--alt-color);border-left:0.2em solid var(--alt-color);padding:0.25em 0.5em;overflow-x:auto;";
     css["pre:has(code.nohighlight)"] = "color:var(--alt-color);background:var(--alt-background);line-height:22px;margin:0.25em 0.5em;padding:1em;overflow-x:auto;";
-	css["pre code.hljs"] = "margin:0.25em 0.5em -1em;"
+    css["pre code.hljs"] = "margin:0.25em 0.5em -1em;"
     css["table.dawk-ex"] = "border-collapse:collapse;margin:0.5em;";
     css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid var(--heading);";
     css["th.dawk-ex"] = "color:var(--heading);border:1px solid var(--heading);border-bottom:2px solid var(--heading);";
@@ -1238,7 +1262,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
         "}\n" \
         "@media print {\n" \
         "  body  { " pt " }\n" \
-		"  pre code.highlight.hljs {overflow-x:hidden;}" \
+        "  pre code.highlight.hljs {overflow-x:hidden;}" \
         "}";
 
     for(k in css)
