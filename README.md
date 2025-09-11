@@ -369,12 +369,6 @@ Things I'd like to add/fix in the future:
   od version did. You can look at how the existing
   [themes](https://github.com/highlightjs/base16-highlightjs/tree/main/themes)
   are written, and base something on those.
-- Awk has a `FILENAME` variable that tells you which file is being processed.
-  - I should use it to set the `Title` variable if it's not set, rather than 
-    defaulting to "Documentation"
-  - Unfortunately it's not available in the `BEGIN` block, so you should do
-    something like `FNR==1 && !Title {Title = FILENAME;}`
-- The _footnote_ hyperlinks have the wrong color...
 
 [typograms]: https://github.com/google/typograms
 [mawk-134]: https://github.com/ThomasDickey/mawk-snapshots

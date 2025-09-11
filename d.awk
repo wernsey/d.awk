@@ -111,7 +111,6 @@
 BEGIN {
 
     # Configuration options
-    if(Title== "") Title = "Documentation";
     if(Css== "") Css = 1;
 
     if(Highlight== "") Highlight = 1;
@@ -202,8 +201,10 @@ Clean {
     Out = Out filter($0);
 }
 
-END {
+!Title { Title = FILENAME; }
 
+END {
+	if(Title == "-") Title = "Documentation";
     if(Mode == "ul" || Mode == "ol") {
         while(ListLevel > 1)
             Buf = Buf "\n</" Open[ListLevel--] ">";
@@ -1125,7 +1126,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["h4"] = "border-bottom:1px solid var(--heading)";
     css["p"] = "margin:0.5em 0.1em;"
     css["hr"] = "background:var(--color);height:1px;border:0;"
-    css["a.normal, a.toc"] = "color:var(--alt-color);";
+    css["a.normal, a.toc, a.footnote, a.footnote-back"] = "color:var(--alt-color);";
     #css["a.normal:visited"] = "color:var(--heading);";
     #css["a.normal:active"] = "color:var(--heading);";
     css["a.normal:hover, a.toc:hover"] = "color:var(--alt-color);";
@@ -1138,7 +1139,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css[".toc-button"] = "color:var(--alt-color);cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
     css["a.toc-button:hover"] = "background:var(--alt-background);";
     css["a.footnote"] = "font-size:smaller;text-decoration:initial;";
-    css["a.footnote-back"] = "text-decoration:initial;font-size:x-small;";
+    css["a.footnote-back"] = "text-decoration:initial;font-size:x-small;font-style:italic;";
     css["strong,b"] = "color:var(--color)";
     css["code"] = "color:var(--alt-color);font-weight:bold;";
     css["blockquote"] = "margin-left:1em;color:var(--alt-color);border-left:0.2em solid var(--alt-color);padding:0.25em 0.5em;overflow-x:auto;";

@@ -351,7 +351,7 @@
 #  - Here is a reference to the footnote[^footnote][^<http://example.com>].
 #  - Here is an inline footnote[^An _inline_ footnote. **Text** _formatting_ ``works``
 #         here as well; Some characters to escape: < & > and <http://example.com>].
-#  - Here is a reference to the third footnote[^footnote3].
+#  - Here is a reference to the fourth footnote[^footnote4].
 #
 # MultiMarkdown's syntax for abbreviations is also supported.
 # For example HTML, XML and GUI.
@@ -363,7 +363,7 @@
 # But only whole words: HTML5 and SXML doesn't get the `<abbr/>` tag.
 #
 # [^footnote]: This is a footnote; **Text** _formatting_ ``works``. Some characters to escape: < & >
-# [^footnote3]: This is footnote number 3. This one contains a [hyperlink][link1]
+# [^footnote4]: This is footnote number 4. This one contains a [hyperlink][link1]
 # [MultiMarkdown]: http://fletcher.github.io/MultiMarkdown-4/syntax
 # *[HTML]: Hypertext Markup Language
 # *[XML]: eXstensible Markup Language; Escaped characters: < > &
