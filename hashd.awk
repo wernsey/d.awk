@@ -51,7 +51,6 @@ BEGIN {
 
     Mode = "p";
     ToC = ""; ToCLevel = 1;
-    CSS = init_css(Css);
     for(i = 0; i < 128; i++)
         _ord[sprintf("%c", i)] = i;
     srand();
@@ -120,60 +119,16 @@ END {
         if(Buf)
             Out = Out tag(Mode, Buf);
     }
-
+	
     print "<!DOCTYPE html>\n<html lang=\"" Lang "\"><head>"
     print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">";
     print "<title>" Title "</title>";
     if(StyleSheet)
         print "<link rel=\"stylesheet\" href=\"" StyleSheet "\">";
-    else {
-        print "<style><!--\n" CSS "\n" \
-        ".print-only {display:none}\n"\
-        "@media print {\n"\
-        "  .no-print { display: none !important;}\n"\
-        "  .print-only {display:block;}\n" \
-        "  pre {overflow-x: clip !important;}\n"\
-		"  a {text-decoration: none;}\n" \
-        "}";
-
-        if(Highlight && HasHighlight) {
-            print \
-              "/* These colors come from the Atom One Dark and Light themes by Daniel Gamage\n" \
-              " * from the original highlight.js distribution:\n" \
-              " * https://github.com/highlightjs/highlight.js/blob/main/src/styles/atom-one-dark.css\n" \
-              " * https://github.com/highlightjs/highlight.js/blob/main/src/styles/atom-one-light.css */\n" \
-              "@media print {\n" \
-              "  body {--com:#a0a1a7;--kwd:#a626a4;--nam:#e45649;--lit:#0184bb;--str:#50a14f;--var:#986801;--sym:#4078f2;--typ:#c18401;}\n" \
-              "}\n" \
-              "@media screen {\n" \
-              "  body {--com:#a0a1a7;--kwd:#a626a4;--nam:#e45649;--lit:#0184bb;--str:#50a14f;--var:#986801;--sym:#4078f2;--typ:#c18401;}\n" \
-              "  body.dark-theme {--com:#5c6370;--kwd:#c678dd;--nam:#e06c75;--lit:#56b6c2;--str:#98c379;--var:#d19a66;--sym:#61aeee;--typ:#e6c07b;}\n" \
-              "  @media  (prefers-color-scheme: dark) {\n" \
-              "    body.light-theme {--com:#a0a1a7;--kwd:#a626a4;--nam:#e45649;--lit:#0184bb;--str:#50a14f;--var:#986801;--sym:#4078f2;--typ:#c18401;}\n" \
-              "    body {--com:#5c6370;--kwd:#c678dd;--nam:#e06c75;--lit:#56b6c2;--str:#98c379;--var:#d19a66;--sym:#61aeee;--typ:#e6c07b;}\n" \
-              "  }\n" \
-              "}";
-            print \
-              "pre code.hljs {display:block;overflow-x: auto;padding: 1em;}\n" \
-              "code.hljs {padding: 3px 5px}\n" \
-              ".hljs {color: var(--alt-color);background: var(--alt-background)}\n" \
-              ".hljs-comment,.hljs-quote {color: var(--com);font-style: italic}\n" \
-              ".hljs-doctag,.hljs-keyword,.hljs-formula {color:var(--kwd);}\n" \
-              ".hljs-section,.hljs-name,.hljs-selector-tag,.hljs-deletion,.hljs-subst {color: var(--nam);}\n" \
-              ".hljs-literal {color: var(--lit);}\n" \
-              ".hljs-string,.hljs-regexp,.hljs-addition,.hljs-attribute,.hljs-meta .hljs-string {color: var(--str);}\n" \
-              ".hljs-attr,.hljs-variable,.hljs-template-variable,.hljs-type,.hljs-selector-class,.hljs-selector-attr,.hljs-selector-pseudo,.hljs-number {color: var(--var);}\n" \
-              ".hljs-symbol,.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-title {color: var(--sym);}\n" \
-              ".hljs-built_in,.hljs-title.class_,.hljs-class .hljs-title {color: var(--typ);}\n" \
-              ".hljs-emphasis {font-style: italic}\n" \
-              ".hljs-strong {font-weight: bold}\n" \
-              ".hljs-link {text-decoration: underline}";
-        }
-
-        print "--></style>";
-    }
+    else if(Css)
+        print "<style>\n" make_css() "\n</style>";
     if(ToC && match(Out, /!\[toc[-+]?\]/)) {
-        print "<script><!--\n" \
+        print "<script>\n" \
             "function toggle_toc(n) {\n" \
             "    var toc=document.getElementById('table-of-contents-' + n);\n" \
             "    var btn=document.getElementById('btn-text-' + n);\n" \
@@ -188,7 +143,7 @@ END {
             "        btn.innerHTML=(toc.style.display=='none')?'&#x25BA;':'&#x25BC;';\n" \
             "    }\n" \
             "}\n" \
-            "//-->\n</script>";
+            "</script>";
     }
     print "</head><body>";
 
@@ -1018,8 +973,7 @@ function obfuscate(e,     r,i,t,o) {
     }
     return o;
 }
-function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
-    if(Css == "0") return "";
+function make_css(             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
 
     css["body"] = "color:var(--color);background:var(--background);font-family:%font-family%;font-size:%font-size%;line-height:1.5em;" \
                 "padding:1em 2em;width:80%;max-width:%maxwidth%;margin:0 auto;min-height:100%;float:none;";
@@ -1031,7 +985,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["h3 a"] = "color:var(--heading);";
     css["h4,h5,h6"] = "padding:0.1em 0.1em;";
     css["h4 a,h5 a,h6 a"] = "color:var(--heading);";
-    css["h1,h2,h3,h4,h5,h6"] = "font-weight:bolder;line-height:1.2em;";
+    css["h1,h2,h3,h4,h5,h6"] = "font-weight:bolder;line-height:1.25em;";
     css["h4"] = "border-bottom:1px solid var(--heading)";
     css["p"] = "margin:0.5em 0.1em;"
     css["hr"] = "background:var(--color);height:1px;border:0;"
@@ -1049,8 +1003,7 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["strong,b"] = "color:var(--color)";
     css["code"] = "color:var(--alt-color);font-weight:bold;";
     css["blockquote"] = "margin: 0.25em 0.5em;color:var(--alt-color);border-left:0.2em solid var(--alt-color);padding:0.25em 0.5em;overflow-x:auto;";
-    css["pre:has(code.nohighlight)"] = "color:var(--alt-color);background:var(--alt-background);line-height:22px;margin:0.25em 0.5em;padding:1em;overflow-x:auto;";
-    css["pre code.hljs"] = "margin:0.25em 0.5em -1em;"
+    css["pre:has(code.nohighlight)"] = "color:var(--alt-color);background:var(--alt-background);line-height:1.3em;margin:0.25em 0.5em;padding:1em;overflow-x:auto;";
     css["table.dawk-ex"] = "border-collapse:collapse;margin:0.5em;";
     css["th.dawk-ex,td.dawk-ex"] = "padding:0.5em 0.75em;border:1px solid var(--heading);";
     css["th.dawk-ex"] = "color:var(--heading);border:1px solid var(--heading);border-bottom:2px solid var(--heading);";
@@ -1143,6 +1096,23 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
         }
     }
 
+    if(Highlight && HasHighlight) {
+        css["pre code.hljs"] = "display:block;overflow-x: auto;padding: 1em;margin: 0.25em 0.5em -1.5em;";
+        css["code.hljs"] = "padding: 3px 5px; line-height:1.3em";
+        css[".hljs"] = "color: var(--alt-color);background: var(--alt-background)";
+        css[".hljs-comment,.hljs-quote"] = "color: var(--com);font-style: italic";
+        css[".hljs-doctag,.hljs-keyword,.hljs-formula"] = "color:var(--kwd);";
+        css[".hljs-section,.hljs-name,.hljs-selector-tag,.hljs-deletion,.hljs-subst"] = "color: var(--nam);";
+        css[".hljs-literal"] = "color: var(--lit);";
+        css[".hljs-string,.hljs-regexp,.hljs-addition,.hljs-attribute,.hljs-meta .hljs-string"] = "color: var(--str);";
+        css[".hljs-attr,.hljs-variable,.hljs-template-variable,.hljs-type,.hljs-selector-class,.hljs-selector-attr,.hljs-selector-pseudo,.hljs-number"] = "color: var(--var);";
+        css[".hljs-symbol,.hljs-bullet,.hljs-link,.hljs-meta,.hljs-selector-id,.hljs-title"] = "color: var(--sym);";
+        css[".hljs-built_in,.hljs-title.class_,.hljs-class .hljs-title"] = "color: var(--typ);";
+        css[".hljs-emphasis"] = "font-style: italic";
+        css[".hljs-strong"] = "font-weight: bold";
+        css[".hljs-link"] = "text-decoration: underline";
+    }
+
     # Font Family:
     ff = "sans-serif";
     fs = "11pt";
@@ -1153,6 +1123,16 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     lt = "--color: #263053; --alt-color: #383A42; --heading: #394970; --background: #FDFDFD; --alt-background: #FAFAFA;";
     # Dark theme colors:
     dt = "--color: #BABFDB; --alt-color: #ABB2BF; --heading: #919DC5; --background: #141825; --alt-background: #282C34;";
+
+    if(Highlight && HasHighlight) {
+        # Colors for the highlight.js syntax highlighting.
+        # They come from the Atom One Dark and Light themes by Daniel Gamage
+        # from the original highlight.js distribution:
+        # https://github.com/highlightjs/highlight.js/blob/main/src/styles/atom-one-dark.css
+        # https://github.com/highlightjs/highlight.js/blob/main/src/styles/atom-one-light.css
+        lt = lt "\n        --com:#a0a1a7;--kwd:#a626a4;--nam:#e45649;--lit:#0184bb;--str:#50a14f;--var:#986801;--sym:#4078f2;--typ:#c18401;";
+        dt = dt "\n        --com:#5c6370;--kwd:#c678dd;--nam:#e06c75;--lit:#56b6c2;--str:#98c379;--var:#d19a66;--sym:#61aeee;--typ:#e6c07b;";
+    }
 
     # Print theme: Same as light theme...
     pt = lt;
@@ -1168,8 +1148,16 @@ function init_css(Css,             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
         "  }\n" \
         "}\n" \
         "@media print {\n" \
-        "  body  { " pt " }\n" \
-        "  pre code.highlight.hljs {overflow-x:hidden;}" \
+        "  body { " pt " }\n" \
+        "  pre code.highlight.hljs {overflow-x:hidden;}\n" \
+        "  pre code {font-size:smaller;}\n" \
+        "}\n" \
+        ".print-only {display:none}\n" \
+        "@media print {\n" \
+        "  .no-print {display: none !important;}\n" \
+        "  .print-only {display:initial;}\n" \
+        "  pre {overflow-x: clip !important;}\n" \
+        "  a {text-decoration: none;}\n" \
         "}";
 
     for(k in css)
