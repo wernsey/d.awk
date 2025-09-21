@@ -358,13 +358,13 @@ Things I'd like to add/fix in the future:
   other Awks (mawk, nawk etc) to just make sure it's portable.
   - It worked with [Mawk](https://github.com/ThomasDickey/mawk-snapshots) (specifically mawk-snapshots-t20250131)
   - The scripts also worked with the [Windows version of Mawk I found here](https://invisible-island.net/mawk/mawk.html)
-  - It worked with [One True Awk](https://github.com/onetrueawk/awk) (specifically [tag 20250116](https://github.com/onetrueawk/awk/releases/tag/20250116)
+  - It worked with [One True Awk](https://github.com/onetrueawk/awk) (specifically [tag 20250116](https://github.com/onetrueawk/awk/releases/tag/20250116))
   - It worked with the Windows version of [Nawk from here](https://gnuwin32.sourceforge.net/packages/nawk.htm)
     - The output in the `README-alt.html` file was broken
   - It worked with Ben Hoyt's [goawk](https://github.com/benhoyt/goawk)
   - I tried it with Raymond Gardner's [wak](https://github.com/raygard/wak)
     - It had a problem with hyperlinks that I didn't get around to investigating
-	- There was also an issue with stray "000" strings ending up in the output that I couldn't explain 
+    - There was also an issue with stray "000" strings ending up in the output that I couldn't explain 
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
 - I've considered adding support for [typograms][] but it seems it is no longer
