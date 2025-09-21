@@ -303,29 +303,29 @@ Here is an Awk script that more or less achieves the same thing:
 #! /usr/bin/awk -f
 BEGIN { print "<meta charset=\"utf-8\">" }
 /\/\*\*/ {
-	sub(/^.*\/\*/,"");
-	incomment=1;
+    sub(/^.*\/\*/,"");
+    incomment=1;
 }
 incomment && /\*\// {
-	incomment=0;
-	sub(/[[:space:]]*\*\/.*/,"");
-	sub(/^[[:space:]]*\*[[:space:]]?/,"");
-	print
+    incomment=0;
+    sub(/[[:space:]]*\*\/.*/,"");
+    sub(/^[[:space:]]*\*[[:space:]]?/,"");
+    print
 }
 incomment && /^[[:space:]]*\*/ {
-	sub(/^[[:space:]]*\*[[:space:]]?/,"");
-	print
+    sub(/^[[:space:]]*\*[[:space:]]?/,"");
+    print
 }
 !incomment && /\/\/\// {
-	sub(/.*\/\/\/[[:space:]]?/,"");
-	print
+    sub(/.*\/\/\/[[:space:]]?/,"");
+    print
 }
 END {
-	print "<!-- Markdeep: -->";
-	print "<style class=\"fallback\">body{visibility:hidden;white-space:pre;font-family:monospace}</style>";
-	print "<script>markdeepOptions={tocStyle:\"auto\"};</script>";
-	print "<script src=\"https://morgan3d.github.io/markdeep/latest/markdeep.min.js\" charset=\"utf-8\"></script>";
-	print "<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility=\"visible\")</script>"
+    print "<!-- Markdeep: -->";
+    print "<style class=\"fallback\">body{visibility:hidden;white-space:pre;font-family:monospace}</style>";
+    print "<script>markdeepOptions={tocStyle:\"auto\"};</script>";
+    print "<script src=\"https://morgan3d.github.io/markdeep/latest/markdeep.min.js\" charset=\"utf-8\"></script>";
+    print "<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility=\"visible\")</script>"
 }
 ```
 
@@ -351,17 +351,25 @@ Things I'd like to add/fix in the future:
 - [ ] It is known to not work with versions of **mawk** prior to 1.3.4.
     (The default Awk on some Debian-derived distros is version 1.3.3).
     Please [upgrade mawk][mawk-134], or use Gawk instead.
-	- The issue seems that the older Mawk was created while POSIX was
+    - The issue seems that the older Mawk was created while POSIX was
       still in draft and misses some regex features like character classes,
-	  i.e. `[:space:]`, which are quite important for `d.awk` (see [here][awk-libs])
-- [ ] Speaking of which, I've been using gawk mostly and I should try using the
+      i.e. `[:space:]`, which are quite important for `d.awk` (see [here][awk-libs])
+- [x] Speaking of which, I've been using gawk mostly and I should try using the
   other Awks (mawk, nawk etc) to just make sure it's portable.
+  - It worked with [Mawk](https://github.com/ThomasDickey/mawk-snapshots) (specifically mawk-snapshots-t20250131)
+  - The scripts also worked with the [Windows version of Mawk I found here](https://invisible-island.net/mawk/mawk.html)
+  - It worked with [One True Awk](https://github.com/onetrueawk/awk) (specifically [tag 20250116](https://github.com/onetrueawk/awk/releases/tag/20250116)
+  - It worked with the Windows version of [Nawk from here](https://gnuwin32.sourceforge.net/packages/nawk.htm)
+    - The output in the `README-alt.html` file was broken
+  - It worked with Ben Hoyt's [goawk](https://github.com/benhoyt/goawk)
+  - I tried it with Raymond Gardner's [wak](https://github.com/raygard/wak)
+    - It had a problem with hyperlinks that I didn't get around to investigating
+	- There was also an issue with stray "000" strings ending up in the output that I couldn't explain 
 - The table of contents is in a `<div>` that ends up inside a `<p>`,
     which is incorrect.
 - I've considered adding support for [typograms][] but it seems it is no longer
   being maintained.
-- When printing, I'd prefer the text in <code> blocks be smaller, but I
-  wasn't satisfied with any of my attempts to fix it.
+
 
 [typograms]: https://github.com/google/typograms
 [mawk-134]: https://github.com/ThomasDickey/mawk-snapshots

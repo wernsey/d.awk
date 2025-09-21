@@ -131,7 +131,7 @@ END {
     print "</head><body>";
 
     if(Css)
-        print "<a class=\"dark-toggle no-print\">\n" svg("moon", "", 12) "\n&nbsp;Toggle Dark Mode</a>\n";
+        print "<a class=\"dark-toggle code-button no-print\" title=\"Toggle Dark Mode\">\n" svg("moon") "\n</a>\n";
 
     if(Out) {
         Out = fix_footnotes(Out);
@@ -167,7 +167,7 @@ END {
     "      console.error(error.message);\n" \
     "    }\n" \
     "  };\n" \
-    "  document.querySelectorAll('.code-button').forEach(b => b.addEventListener('click', copyCode));\n" \
+    "  document.querySelectorAll('.code-toolbar .code-button').forEach(b => b.addEventListener('click', copyCode));\n" \
     "})();\n</script>";
 
     if(Highlight && HasHighlight) {
@@ -973,12 +973,13 @@ function make_css(             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["p"] = "margin:0.5em 0.1em;"
     css["hr"] = "background:var(--color);height:1px;border:0;"
     css["a"] = "color:var(--alt-color);";
-    css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;";
+    css["a.top"] = "font-size:x-small;text-decoration:initial;float:right;margin-right: 1em;";
     css["a.header svg"] = "opacity:0;";
     css["a.header:hover svg"] = "opacity:1;";
     css["a.header"] = "text-decoration: none;";
-    css["a.dark-toggle"] = "float:right; cursor: pointer; font-size: small; padding: 0.3em 0.5em 0.5em 0.5em; font-family: monospace; border-radius: 3px;";
-    css["a.dark-toggle:hover"] = "background:var(--alt-background);";
+    css["a.dark-toggle"] = "float:right;";
+    css["a.dark-toggle.code-button"] = "opacity:0.35;";
+    css["a.dark-toggle.code-button:hover"] = "opacity:1;background:var(--alt-background);";
     css[".toc-button"] = "color:var(--alt-color);cursor:pointer;font-size:small;padding: 0.3em 0.5em 0.5em 0.5em;font-family:monospace;border-radius:3px;";
     css["a.toc-button:hover"] = "background:var(--alt-background);";
     css["a.footnote"] = "font-size:smaller;text-decoration:initial;";
@@ -1026,7 +1027,7 @@ function make_css(             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     css["blockquote.alert-caution"] = "border-left:0.3em solid " icon_color("caution") ";";
     css["blockquote.alert-caution .alert-head"] = "color: " icon_color("caution") ";";
 
-    css["div.code-block .code-button"] = "border:2px solid rgb(from var(--alt-color) r g b / 20%);background: var(--background);" \
+    css[".code-button"] = "border:2px solid rgb(from var(--alt-color) r g b / 20%);background: var(--background);" \
                                             "width:16px;height:16px;" \
                                             "cursor:pointer;padding:4px;border-radius:2px;opacity:0;" \
                                             "transition-property: opacity; transition-duration: .25s;";
@@ -1100,8 +1101,6 @@ function make_css(             css,ss,hr,bg1,bg2,bg3,bg4,ff,fs,i,lt,dt,pt) {
     ff = "sans-serif";
     fs = "11pt";
 
-    for(i = 0; i<=255; i++)_hex[sprintf("%02X",i)]=i;
-
     # Light theme colors:
     lt = "--color: #263053; --alt-color: #383A42; --heading: #394970; --background: #FDFDFD; --alt-background: #FAFAFA;";
     # Dark theme colors:
@@ -1163,7 +1162,7 @@ function icon_color(which) {
 function svg(which, color, size,        path, body) {
     # TODO: Get better at Inkscape
     if(which == "moon")
-        path = "M 10.04 0.26 A 11.64 11.64 0 0 1 10.79 4.36 A 11.64 11.63625 0 0 1 4.01 14.94 A 8 8 0 0 0 8 16 A 8 8 0 0 0 16 8 A 8 8 0 0 0 10.04 0.26 z";
+        path = "M 8.0,2.4 A 8.3,8.3 0 0 1 8.6,5.3 8.3,8.3 0 0 1 3.7,12.9 5.7,5.7 0 0 0 6.6,13.6 5.7,5.7 0 0 0 12.3,7.9 5.7,5.7 0 0 0 8.0,2.4 Z";
     else if(which == "link")
         path = "m 3.34,4.63 1.31,2.66 0,0 0.61,1.24 0.01,0 1.23,2.5 L 9.52,9.58 8.91,8.34 7.17,9.18 6.82,8.47 6.55,7.92 5.94,6.68 5.59,5.96 5.24,5.26 11.74,2.13 13.67,6.05 11.25,7.21 11.86,8.45 15.53,6.69 12.39,0.29 Z M 0.47,9.31 3.61,15.71 12.63,11.37 11.67,9.43 11.32,8.71 10.71,7.47 10.43,6.92 9.48,4.97 6.48,6.42 7.09,7.66 8.84,6.82 9.19,7.52 9.46,8.08 10.07,9.32 10.42,10.03 10.76,10.73 4.26,13.87 2.33,9.95 4.75,8.79 4.14,7.55 Z";
     else if(which == "note")
@@ -1185,7 +1184,7 @@ function svg(which, color, size,        path, body) {
         UsedSymbols[which] = 1;
         body = "<symbol id=\"icon-" which "\"><path d=\"" path "\"/></symbol><use href=\"#icon-" which "\"/>";
     } else {
-        body = "<use fill=\"" color "\" href=\"#icon-" which "\"/>";
+        body = "<use href=\"#icon-" which "\"/>";
     }
 
     if(!color) color = "var(--color)";
